@@ -6,6 +6,8 @@ use std::{
     fmt::Display,
 };
 
+use crate::stats::column::Column;
+
 // error type
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum DatasetError {
@@ -16,18 +18,12 @@ pub enum DatasetError {
 impl Display for DatasetError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let msg: &str = match self {
-            Self::IndexInUse => "This string index is already being used.",
-            _ => panic!("Unhandled error type."),
+            Self::IndexInUse => "This index is already being used.",
+            Self::IndexInexistent => "This index does not exist.",
         };
 
-        write!(f, "Dataset error: {}", msg)
+        write!(f, "Dataset Error: {}", msg)
     }
-}
-
-// a single column of data, only of one type
-#[derive(Debug, PartialEq, PartialOrd)]
-pub enum Column {
-    Int(Vec<i64>),
 }
 
 pub struct Dataset {
@@ -51,6 +47,14 @@ impl Dataset {
         }
     }
 
+    // get immutable reference to column
+    pub fn get_column(&self, key: &'static str) -> Result<&Column, DatasetError> {
+        match self.data.get(key) {
+            Some(value) => Ok(value),
+            None => Err(DatasetError::IndexInexistent),
+        }
+    }
+
     // get mutable reference to column
     pub fn get_column_mut(&mut self, key: &'static str) -> Result<&mut Column, DatasetError> {
         match self.data.entry(key) {
@@ -58,14 +62,6 @@ impl Dataset {
             // it can safely return a mutable reference to the column now
             Occupied(entry) => Ok(entry.into_mut()),
             Vacant(_) => Err(DatasetError::IndexInexistent),
-        }
-    }
-
-    // get immutable reference to column
-    pub fn get_column(&self, key: &'static str) -> Result<&Column, DatasetError> {
-        match self.data.get(key) {
-            Some(value) => Ok(value),
-            None => Err(DatasetError::IndexInexistent),
         }
     }
 }
