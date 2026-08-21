@@ -1,27 +1,30 @@
+// TODO: implement
+// this should be the first model that has a Config with hyperoperations
+
 use crate::{
     models::model::Model,
     stats::{column::Column, dataset::Dataset},
 };
 
 pub struct LinearRegression {
-    params: Vec<i64>,
-    iters: usize,
+    _params: Vec<i64>,
+    _iters: usize,
 }
 
 impl LinearRegression {
-    pub fn new(iters: usize) -> Self {
-        let params = Vec::<i64>::new();
+    pub fn new(_iters: usize) -> Self {
+        let _params = Vec::<i64>::new();
 
-        Self { iters, params }
+        Self { _iters, _params }
     }
 }
 
 impl Model for LinearRegression {
-    fn fit(&mut self, train_data: &Dataset, answer_data: &Column) {
+    fn fit(&mut self, _train_data: &Dataset, _answer_data: &Column) {
         // TODO: yes
     }
 
-    fn predict(&self, data: &Dataset) -> i64 {
+    fn predict(&self, _data: &Dataset) -> i64 {
         // TODO: yes
         0
     }
