@@ -23,12 +23,14 @@ impl Column {
         }
     }
 
-    pub fn sort(&mut self) {
-        match self {
+    pub fn sort(mut self) -> Self {
+        match &mut self {
             Self::Int(v) => v.sort(),
             Self::Float(v) => v.sort_by(|a, b| a.total_cmp(b)),
             Self::String(_) => {}
         };
+
+        self
     }
 
     // descriptive statistical methods
@@ -119,8 +121,20 @@ impl Column {
         }
     }
 
-    pub fn nearest_quartile(&self) Result<f64, ColumnError>{
-        
+    pub fn nearest_quantile(&self, q: f64) -> Result<f64, ColumnError> {
+        match self {
+            Self::Int(v) => {
+                let n = v.len();
+                let idx = ((n - 1) as f64 * q).round();
+                Ok(v[idx as usize] as f64)
+            }
+            Self::Float(v) => {
+                let n = v.len();
+                let idx = ((n - 1) as f64 * q).round();
+                Ok(v[idx as usize])
+            }
+            Self::String(_) => Err(ColumnError::NonNumerical),
+        }
     }
 }
 
@@ -152,8 +166,7 @@ mod tests {
     #[test]
     fn sorting() {
         // integers
-        let mut col1 = Column::Int(vec![0, 2, 1, 3]);
-        col1.sort();
+        let col1 = Column::Int(vec![0, 2, 1, 3]).sort();
 
         match col1 {
             Column::Int(v) => assert_eq!(v, vec![0, 1, 2, 3]),
@@ -161,12 +174,45 @@ mod tests {
         }
 
         // floats
-        let mut col2 = Column::Float(vec![3.13, 3.14, 3.]);
-        col2.sort();
+        let col2 = Column::Float(vec![3.13, 3.14, 3.]).sort();
 
         match col2 {
             Column::Float(v) => assert_eq!(v, vec![3., 3.13, 3.14]),
             _ => panic!("Impossible"),
         }
+    }
+
+    #[test]
+    fn simple_eda() {
+        let ds = Column::Int(vec![1, 2, 3, 4, 5]);
+
+        // mean test
+        match ds.mean() {
+            Ok(mean) => assert_eq!(mean, 3.),
+            Err(_) => panic!("Impossible"),
+        };
+
+        // median test
+        match ds.median() {
+            Ok(median) => assert_eq!(median, 3.),
+            Err(_) => panic!("Impossible"),
+        };
+    }
+
+    #[test]
+    fn simple_quantiles() {
+        let ds = Column::Int(vec![1, 2, 3, 4, 5]);
+
+        // quartile median test
+        match ds.nearest_quantile(0.5) {
+            Ok(q2) => assert_eq!(q2, 3.),
+            Err(_) => panic!("Impossible"),
+        };
+
+        // third quartile test
+        match ds.nearest_quantile(0.75) {
+            Ok(q2) => assert_eq!(q2, 4.),
+            Err(_) => panic!("Impossible"),
+        };
     }
 }
