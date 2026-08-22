@@ -1,141 +1,100 @@
-use crate::stats::column::{Column, ColumnError};
+use crate::stats::column::ColumnError;
+use num_traits::{AsPrimitive, Num};
 
-pub fn min(col: &Column) -> Result<f64, ColumnError> {
-    let mut min: f64 = f64::MAX;
+// general methods for slices
 
-    let data: &[f64];
-    let float_v: Vec<f64>;
-    match col {
-        Column::Int(v) => {
-            float_v = v.iter().map(|x| *x as f64).collect();
-            data = &float_v;
-        }
-        Column::Float(v) => data = v.as_slice(),
-        Column::String(_) => return Err(ColumnError::NonNumerical),
-    };
+pub fn min<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, ColumnError> {
+    if data.len() == 0 {
+        return Err(ColumnError::Empty);
+    }
 
-    // linear scan for minimum
-    for x in data {
-        if *x <= min {
-            min = *x
+    let mut min: T = data[0];
+    for x in &data[1..] {
+        if *x < min {
+            min = *x;
         }
     }
 
     Ok(min)
 }
 
-pub fn max(col: &Column) -> Result<f64, ColumnError> {
-    let mut max: f64 = f64::MIN;
+pub fn max<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, ColumnError> {
+    if data.len() == 0 {
+        return Err(ColumnError::Empty);
+    }
 
-    let data: &[f64];
-    let float_v: Vec<f64>;
-    match col {
-        Column::Int(v) => {
-            float_v = v.iter().map(|x| *x as f64).collect();
-            data = &float_v;
-        }
-        Column::Float(v) => data = v.as_slice(),
-        Column::String(_) => return Err(ColumnError::NonNumerical),
-    };
-
-    // linear scan for maximum
-    for x in data {
-        if *x >= max {
-            max = *x
+    let mut max: T = data[0];
+    for x in &data[1..] {
+        if *x > max {
+            max = *x;
         }
     }
 
     Ok(max)
 }
 
-pub fn mean(col: &Column) -> Result<f64, ColumnError> {
+pub fn mean<T: AsPrimitive<f64>>(data: &[T]) -> Result<f64, ColumnError> {
     let mut sum: f64 = 0.;
+    let n = data.len();
 
-    // load the number of elements locally to avoid new function calls and
-    // extraneous pattern matching from self.len()
-    let n = col.len() as f64;
-
-    match col {
-        Column::Int(v) => v.iter().for_each(|el| sum += *el as f64),
-        Column::Float(v) => v.iter().for_each(|el| sum += *el),
-        _ => return Err(ColumnError::NonNumerical),
-    };
-
-    Ok(sum / n)
-}
-
-pub fn median(col: &Column) -> Result<f64, ColumnError> {
-    let n = col.len();
-
-    let med: f64;
-    match col {
-        Column::Int(v) => {
-            if n % 2 == 0 {
-                med = (v[n / 2 - 1] as f64 + v[n / 2] as f64) / 2.;
-            } else {
-                med = v[n / 2] as f64;
-            }
-
-            Ok(med)
-        }
-        Column::Float(v) => {
-            if n % 2 == 0 {
-                med = (v[n / 2 - 1] + v[n / 2]) / 2.;
-            } else {
-                med = v[n / 2];
-            }
-
-            Ok(med)
-        }
-        Column::String(_) => Err(ColumnError::NonNumerical),
+    if n == 0 {
+        return Err(ColumnError::Empty);
     }
+
+    data.iter().for_each(|el| sum += el.as_());
+    Ok(sum / n as f64)
 }
 
-pub fn linear_quantile(col: &Column, q: f64) -> Result<f64, ColumnError> {
+pub fn median<T: AsPrimitive<f64>>(data: &[T]) -> Result<f64, ColumnError> {
+    let med: f64;
+    let n = data.len();
+
+    if n == 0 {
+        return Err(ColumnError::Empty);
+    }
+
+    if n % 2 == 0 {
+        med = (data[n / 2 - 1].as_() + data[n / 2].as_()) / 2.;
+    } else {
+        med = data[n / 2].as_();
+    }
+
+    Ok(med)
+}
+
+pub fn linear_quantile<T: AsPrimitive<f64>>(data: &[T], q: f64) -> Result<f64, ColumnError> {
     // linear interpolation has the formula:
     //   x_floor(q) + (q - floor(q)) (x_ceil(q) - x_floor(q))
     // where q is the quantile
 
-    let h: f64 = q * ((col.len() - 1) as f64);
+    let n: usize = data.len();
+
+    if n == 0 {
+        return Err(ColumnError::Empty);
+    }
+
+    let h: f64 = q * ((n - 1) as f64);
 
     let i: usize = h.floor() as usize;
     let j: usize = h.ceil() as usize;
     let d: f64 = h - i as f64;
 
-    match col {
-        Column::Int(v) => {
-            let x_i = v[i] as f64;
-            let x_j = v[j] as f64;
+    let x_i = data[i].as_();
+    let x_j = data[j].as_();
 
-            let x_diff = x_j - x_i;
-            Ok(x_i + (d * x_diff as f64))
-        }
-        Column::Float(v) => {
-            let x_i = v[i] as f64;
-            let x_j = v[j] as f64;
-
-            let x_diff = x_j - x_i;
-            Ok(x_i + (d * x_diff as f64))
-        }
-
-        Column::String(_) => return Err(ColumnError::NonNumerical),
-    }
+    let x_diff = x_j - x_i;
+    Ok(x_i + (d * x_diff))
 }
 
-pub fn nearest_quantile(col: &Column, q: f64) -> Result<f64, ColumnError> {
-    match col {
-        Column::Int(v) => {
-            let n = v.len();
-            let idx = ((n - 1) as f64 * q).round();
-            Ok(v[idx as usize] as f64)
-        }
-        Column::Float(v) => {
-            let n = v.len();
-            let idx = ((n - 1) as f64 * q).round();
-            Ok(v[idx as usize])
-        }
-        Column::String(_) => Err(ColumnError::NonNumerical),
+pub fn nearest_quantile<T: AsPrimitive<f64>>(data: &[T], q: f64) -> Result<f64, ColumnError> {
+    let n = data.len();
+
+    if n == 0 {
+        return Err(ColumnError::Empty);
     }
+
+    let idx = ((n - 1) as f64 * q).round(); // the index at q% of the array's length
+    Ok(data[idx as usize].as_())
 }
 
 #[cfg(test)]
@@ -144,26 +103,42 @@ mod tests {
 
     #[test]
     fn simple_eda() {
-        let col = Column::Int(vec![1, 2, 3, 4, 5]);
+        let arr = [1, 2, 3, 4, 5];
 
         // mean test
-        match mean(&col) {
+        match mean(&arr) {
             Ok(mean) => assert_eq!(mean, 3.),
             Err(_) => panic!("Impossible"),
         };
 
-        // median test
-        match median(&col) {
+        match median(&arr) {
             Ok(median) => assert_eq!(median, 3.),
             Err(_) => panic!("Impossible"),
         };
     }
 
     #[test]
-    fn even_count_median() {
-        let col = Column::Int(vec![1, 2, 3, 4, 5, 6]);
+    fn simple_eda_with_floats() {
+        // ts exists cus i wanted to see if PartialOrd worked
 
-        match median(&col) {
+        let arr = [1., 2., 4., 7., 9.];
+
+        match mean(&arr) {
+            Ok(mean) => assert_eq!(mean, 4. + 3. / 5.),
+            Err(_) => panic!("Impossible"),
+        };
+
+        match median(&arr) {
+            Ok(median) => assert_eq!(median, 4.),
+            Err(_) => panic!("Impossible"),
+        };
+    }
+
+    #[test]
+    fn even_count_median() {
+        let arr = [1, 2, 3, 4, 5, 6];
+
+        match median(&arr) {
             Ok(median) => assert_eq!(median, 3.5),
             Err(_) => panic!("Impossible"),
         };
@@ -171,16 +146,16 @@ mod tests {
 
     #[test]
     fn simple_quantiles() {
-        let col = Column::Int(vec![1, 2, 3, 4, 5]);
+        let arr = [1, 2, 3, 4, 5];
 
         // quartile median test
-        match nearest_quantile(&col, 0.5) {
+        match nearest_quantile(&arr, 0.5) {
             Ok(q2) => assert_eq!(q2, 3.),
             Err(_) => panic!("Impossible"),
         };
 
         // third quartile test
-        match nearest_quantile(&col, 0.75) {
+        match nearest_quantile(&arr, 0.75) {
             Ok(q2) => assert_eq!(q2, 4.),
             Err(_) => panic!("Impossible"),
         };
@@ -188,26 +163,26 @@ mod tests {
 
     #[test]
     fn second_quantiles_equals_median() {
-        let col = Column::Int(vec![6, 7, 8, 9]);
-        let med = median(&col).unwrap();
-        let q2 = linear_quantile(&col, 0.5).unwrap();
+        let arr = [6, 7, 8, 9];
+        let med = median(&arr).unwrap();
+        let q2 = linear_quantile(&arr, 0.5).unwrap();
 
         assert_eq!(med, q2);
     }
 
     #[test]
     fn simple_min_and_max() {
-        let col = Column::Int(vec![1, 2, 3]);
+        let arr = [1, 2, 3];
 
         // test a simple minimum
-        match min(&col) {
-            Ok(m) => assert_eq!(m, 1.),
+        match min(&arr) {
+            Ok(m) => assert_eq!(m, 1),
             Err(_) => panic!("Impossible"),
         }
 
         // test a simple maximum
-        match max(&col) {
-            Ok(m) => assert_eq!(m, 3.),
+        match max(&arr) {
+            Ok(m) => assert_eq!(m, 3),
             Err(_) => panic!("Impossible"),
         }
     }

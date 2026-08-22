@@ -1,9 +1,12 @@
 use std::fmt::Display;
 
+use crate::stats::eda::{linear_quantile, max, mean, median, min, nearest_quantile};
+
 // error type
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum ColumnError {
     NonNumerical,
+    Empty,
 }
 
 // a single column of data, only of one type
@@ -32,12 +35,63 @@ impl Column {
 
         self
     }
+
+    // EDA methods
+
+    pub fn max(&self) -> Result<f64, ColumnError> {
+        match self {
+            Self::Float(v) => max(v),
+            Self::Int(v) => max(v).map(|x| x as f64),
+            Self::String(_) => Err(ColumnError::NonNumerical),
+        }
+    }
+
+    pub fn min(&self) -> Result<f64, ColumnError> {
+        match self {
+            Self::Float(v) => min(v),
+            Self::Int(v) => min(v).map(|x| x as f64),
+            Self::String(_) => Err(ColumnError::NonNumerical),
+        }
+    }
+
+    pub fn mean(&self) -> Result<f64, ColumnError> {
+        match self {
+            Self::Float(v) => mean(v),
+            Self::Int(v) => mean(v),
+            Self::String(_) => Err(ColumnError::NonNumerical),
+        }
+    }
+
+    pub fn median(&self) -> Result<f64, ColumnError> {
+        match self {
+            Self::Float(v) => median(v),
+            Self::Int(v) => median(v),
+            Self::String(_) => Err(ColumnError::NonNumerical),
+        }
+    }
+
+    pub fn linear_quantile(&self, q: f64) -> Result<f64, ColumnError> {
+        match self {
+            Self::Float(v) => linear_quantile(v, q),
+            Self::Int(v) => linear_quantile(v, q),
+            Self::String(_) => Err(ColumnError::NonNumerical),
+        }
+    }
+
+    pub fn nearest_quantile(&self, q: f64) -> Result<f64, ColumnError> {
+        match self {
+            Self::Float(v) => nearest_quantile(v, q),
+            Self::Int(v) => nearest_quantile(v, q),
+            Self::String(_) => Err(ColumnError::NonNumerical),
+        }
+    }
 }
 
 impl Display for ColumnError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let msg: &str = match self {
-            Self::NonNumerical => "This column is non-numerical.",
+            Self::NonNumerical => "This column has non-numerical data.",
+            Self::Empty => "This column has no data.",
         };
 
         write!(f, "Column Error: {}", msg)
