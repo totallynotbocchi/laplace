@@ -7,6 +7,7 @@ use crate::stats::eda::{linear_quantile, max, mean, median, min, nearest_quantil
 pub enum ColumnError {
     NonNumerical,
     Empty,
+    NonMatchingSizes,
 }
 
 // a single column of data, only of one type
@@ -92,6 +93,7 @@ impl Display for ColumnError {
         let msg: &str = match self {
             Self::NonNumerical => "This column has non-numerical data.",
             Self::Empty => "This column has no data.",
+            Self::NonMatchingSizes => "The sizes of the two columns do not match.",
         };
 
         write!(f, "Column Error: {}", msg)

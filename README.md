@@ -8,18 +8,18 @@ In under no particular order, I am planning:
 
 - [x] Mean and median
 - [x] Min, max and quantiles
-- [ ] Std and var
+- [ ] Std and var (population and sample)
 - [ ] Handling missing data
 - [ ] Reading CSV data into a `Dataset`
 - [ ] Linear regression
 - [ ] Logistic Regression
 - [ ] KNN
 - [ ] Weighted mean, geometric mean, etc.
-- [ ] Correlation and covariance
+- [x] Correlation and covariance
 - [ ] Grouping data by column
-- [ ] More error/metric functions like RMSE, R^2, accuracy and etc.
+- [ ] More error/metric functions (like RMSE, R^2 and accuracy)
 - [ ] Basic scaling
 - [ ] Basic normalizing
 - [ ] Outlier handling
-- [ ] One-Hot encoding
+- [ ] One-hot encoding
 - [ ] Basic probability distributions (sample of a dist., CDF, PDF, etc.)
