@@ -67,20 +67,25 @@ pub fn mean(col: &Column) -> Result<f64, ColumnError> {
 pub fn median(col: &Column) -> Result<f64, ColumnError> {
     let n = col.len();
 
+    let med: f64;
     match col {
         Column::Int(v) => {
-            if n % 2 != 0 {
-                Ok(v[(n - 1) / 2 as usize] as f64)
+            if n % 2 == 0 {
+                med = (v[n / 2 - 1] as f64 + v[n / 2] as f64) / 2.;
             } else {
-                Ok((v[n / 2 as usize] + v[n / 2 + 1 as usize]) as f64)
+                med = v[n / 2] as f64;
             }
+
+            Ok(med)
         }
         Column::Float(v) => {
-            if n % 2 != 0 {
-                Ok(v[(n - 1) / 2 as usize])
+            if n % 2 == 0 {
+                med = (v[n / 2 - 1] + v[n / 2]) / 2.;
             } else {
-                Ok(v[(n / 2 + n / 2 + 1) as usize])
+                med = v[n / 2];
             }
+
+            Ok(med)
         }
         Column::String(_) => Err(ColumnError::NonNumerical),
     }
@@ -91,35 +96,23 @@ pub fn linear_quantile(col: &Column, q: f64) -> Result<f64, ColumnError> {
     //   x_floor(q) + (q - floor(q)) (x_ceil(q) - x_floor(q))
     // where q is the quantile
 
-    let i = q.floor();
-    let j = q.ceil();
-    let d = q - i;
+    let h: f64 = q * ((col.len() - 1) as f64);
+
+    let i: usize = h.floor() as usize;
+    let j: usize = h.ceil() as usize;
+    let d: f64 = h - i as f64;
 
     match col {
         Column::Int(v) => {
-            let x_i = v[i as usize] as f64;
-            let x_j = v[j as usize] as f64;
-
-            // handle simple edge cases
-            if q == 0. {
-                return Ok(v[0] as f64);
-            } else if q == 0.5 {
-                return Ok(x_i + x_j / 2.);
-            }
+            let x_i = v[i] as f64;
+            let x_j = v[j] as f64;
 
             let x_diff = x_j - x_i;
             Ok(x_i + (d * x_diff as f64))
         }
         Column::Float(v) => {
-            let x_i = v[i as usize] as f64;
-            let x_j = v[j as usize] as f64;
-
-            // handle simple edge cases
-            if q == 0. {
-                return Ok(v[0] as f64);
-            } else if q == 0.5 {
-                return Ok(x_i + x_j / 2.);
-            }
+            let x_i = v[i] as f64;
+            let x_j = v[j] as f64;
 
             let x_diff = x_j - x_i;
             Ok(x_i + (d * x_diff as f64))
@@ -151,36 +144,55 @@ mod tests {
 
     #[test]
     fn simple_eda() {
-        let ds = Column::Int(vec![1, 2, 3, 4, 5]);
+        let col = Column::Int(vec![1, 2, 3, 4, 5]);
 
         // mean test
-        match mean(&ds) {
+        match mean(&col) {
             Ok(mean) => assert_eq!(mean, 3.),
             Err(_) => panic!("Impossible"),
         };
 
         // median test
-        match median(&ds) {
+        match median(&col) {
             Ok(median) => assert_eq!(median, 3.),
             Err(_) => panic!("Impossible"),
         };
     }
 
     #[test]
+    fn even_count_median() {
+        let col = Column::Int(vec![1, 2, 3, 4, 5, 6]);
+
+        match median(&col) {
+            Ok(median) => assert_eq!(median, 3.5),
+            Err(_) => panic!("Impossible"),
+        };
+    }
+
+    #[test]
     fn simple_quantiles() {
-        let ds = Column::Int(vec![1, 2, 3, 4, 5]);
+        let col = Column::Int(vec![1, 2, 3, 4, 5]);
 
         // quartile median test
-        match nearest_quantile(&ds, 0.5) {
+        match nearest_quantile(&col, 0.5) {
             Ok(q2) => assert_eq!(q2, 3.),
             Err(_) => panic!("Impossible"),
         };
 
         // third quartile test
-        match nearest_quantile(&ds, 0.75) {
+        match nearest_quantile(&col, 0.75) {
             Ok(q2) => assert_eq!(q2, 4.),
             Err(_) => panic!("Impossible"),
         };
+    }
+
+    #[test]
+    fn second_quantiles_equals_median() {
+        let col = Column::Int(vec![6, 7, 8, 9]);
+        let med = median(&col).unwrap();
+        let q2 = linear_quantile(&col, 0.5).unwrap();
+
+        assert_eq!(med, q2);
     }
 
     #[test]
