@@ -2,8 +2,8 @@
 // this should be the first model that has a Config with hyperoperations
 
 use crate::{
-    models::model::Model,
-    stats::{column::Column, dataset::Dataset},
+    models::Model,
+    stats::{Column, Dataset},
 };
 
 pub struct LinearRegression {

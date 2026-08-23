@@ -8,7 +8,7 @@ In under no particular order, I am planning:
 
 - [x] Mean and median
 - [x] Min, max and quantiles
-- [ ] Std and var (population and sample)
+- [x] Std and var (population and sample)
 - [ ] Handling missing data
 - [ ] Reading CSV data into a `Dataset`
 - [ ] Linear regression
@@ -23,3 +23,4 @@ In under no particular order, I am planning:
 - [ ] Outlier handling
 - [ ] One-hot encoding
 - [ ] Basic probability distributions (sample of a dist., CDF, PDF, etc.)
+- [ ] Range

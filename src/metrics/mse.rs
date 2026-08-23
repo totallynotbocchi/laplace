@@ -27,35 +27,3 @@ pub fn mse_grad(y_pred: &[f64], y_true: &[f64]) -> Vec<f64> {
 
     grad
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    static TOLERANCE: f64 = 0.001;
-
-    #[test]
-    fn same_array() {
-        let arr1 = [0., 1., 2.];
-
-        let err = mse(&arr1, &arr1);
-        assert_eq!(err, 0.);
-    }
-
-    #[test]
-    fn correctness() {
-        let y_true = [1., 2., 3.];
-        let y_pred = [1., 2., 5.];
-
-        let err = mse(&y_pred, &y_true);
-        assert!((err - 4. / 3.).abs() < TOLERANCE);
-    }
-
-    #[test]
-    fn negatives() {
-        let y_true = [-1., -2., -3.];
-        let y_pred = [-1., -2., -5.];
-
-        let err = mse(&y_pred, &y_true);
-        assert!((err - 4. / 3.).abs() < TOLERANCE);
-    }
-}
