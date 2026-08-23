@@ -2,11 +2,11 @@ use std::iter::Sum;
 
 use num_traits::{Num, ToPrimitive};
 
-use crate::stats::ColumnError;
+use crate::stats::{Column, ColumnError, EDAError};
 
-pub fn min<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, ColumnError> {
+pub fn min<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, EDAError> {
     if data.len() == 0 {
-        return Err(ColumnError::Empty);
+        return Err(EDAError::EmptyData);
     }
 
     let mut min: T = data[0];
@@ -19,9 +19,9 @@ pub fn min<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, ColumnError> {
     Ok(min)
 }
 
-pub fn max<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, ColumnError> {
+pub fn max<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, EDAError> {
     if data.len() == 0 {
-        return Err(ColumnError::Empty);
+        return Err(EDAError::EmptyData);
     }
 
     let mut max: T = data[0];
@@ -34,25 +34,51 @@ pub fn max<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, ColumnError> {
     Ok(max)
 }
 
+pub fn range<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, EDAError> {
+    let range = max(data)? - min(data)?;
+    Ok(range)
+}
+
 // NOTE: this (and everything using these conversions) should pretty much never fail,
 // so unwrapping that conversion is okay!!1!
-pub fn mean<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, ColumnError> {
+pub fn mean<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, EDAError> {
     let n = data.len();
 
     if n == 0 {
-        return Err(ColumnError::Empty);
+        return Err(EDAError::EmptyData);
     }
 
     let sum = data.iter().copied().sum::<T>().to_f64().unwrap();
     Ok(sum / n as f64)
 }
 
-pub fn median<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, ColumnError> {
+pub fn weighted_mean<T, U>(data: &[T], weights: &[U]) -> Result<f64, EDAError>
+where
+    T: Num + ToPrimitive + Copy + Sum,
+    U: Num + ToPrimitive + Copy,
+{
+    if data.len() != weights.len() {
+        return Err(EDAError::DifferentSizes);
+    // one inequality handles either case of being empty
+    } else if data.len() == 0 {
+        return Err(EDAError::EmptyData);
+    }
+
+    let sum = data
+        .iter()
+        .zip(weights)
+        .map(|(&x, &w)| x.to_f64().unwrap() * w.to_f64().unwrap())
+        .sum::<f64>();
+
+    Ok(sum / data.len() as f64)
+}
+
+pub fn median<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, EDAError> {
     let med: f64;
     let n = data.len();
 
     if n == 0 {
-        return Err(ColumnError::Empty);
+        return Err(EDAError::EmptyData);
     }
 
     if n % 2 == 0 {
@@ -87,7 +113,7 @@ mod tests {
     }
 
     #[test]
-    fn simple_eda_with_floats() {
+    fn simple_mean_and_median_with_floats() {
         // ts exists cus i wanna see if PartialOrd works
 
         let arr = [1., 2., 4., 7., 9.];
@@ -116,5 +142,29 @@ mod tests {
 
         let m = max(&arr).unwrap();
         assert_eq!(m, 3);
+    }
+
+    #[test]
+    fn small_and_large_ranges() {
+        // small
+        let arr = [1, 6, 100, 193];
+
+        let rn = range(&arr).unwrap();
+        assert_eq!(rn, 192);
+
+        // really large and really small
+        let arr = [5e-11, 5e-10, 5e-12, 5e12, 5e15, 5e10];
+        let rn = range(&arr).unwrap();
+        assert_eq!(rn, 5e15 - 5e-12);
+    }
+
+    #[test]
+    fn weight_mean_by_1_equals_mean() {
+        let arr = [1, 2, 3, 7];
+        let weights = [1, 1, 1, 1];
+
+        let wm = weighted_mean(&arr, &weights).unwrap();
+        let nm = mean(&arr).unwrap();
+        assert_eq!(wm, nm);
     }
 }

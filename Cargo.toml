@@ -5,3 +5,14 @@ edition = "2024"
 
 [dependencies]
 num-traits = "0.2.19"
+thiserror = "2.0.20"
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "benchmarks"
+harness = false
+
+[profile.dev]
+debug = false

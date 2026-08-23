@@ -1,27 +1,18 @@
-use std::fmt::Display;
-
+use crate::stats::EDAError;
 use crate::stats::*;
+use thiserror::Error;
 
 // error type
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Error, Debug, PartialEq, PartialOrd)]
 pub enum ColumnError {
-    NonNumerical,
+    #[error("This column has no data.")]
     Empty,
+
+    #[error("The sizes of the two columns do not match.")]
     NonMatchingSizes,
-    InvalidInput,
-}
 
-impl Display for ColumnError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let msg: &str = match self {
-            Self::NonNumerical => "This column has non-numerical data.",
-            Self::Empty => "This column has no data.",
-            Self::NonMatchingSizes => "The sizes of the two columns do not match.",
-            Self::InvalidInput => "The input given to this function is invalid given this data.",
-        };
-
-        write!(f, "Column Error: {}", msg)
-    }
+    #[error("The column is not numeric when it was expected to be,")]
+    NonNumerical,
 }
 
 // a single column of data, only of one type
@@ -51,143 +42,152 @@ impl Column {
         self
     }
 
-    // ===================== EDA methods =====================
-
-    // =========== min and max ===========
-
-    pub fn max(&self) -> Result<f64, ColumnError> {
+    // NOTE: this copies data
+    pub fn as_f64_slice(&self) -> Result<Vec<f64>, ColumnError> {
         match self {
-            Self::Float(v) => max(v),
-            Self::Int(v) => max(v).map(|x| x as f64),
+            Self::Int(v) => Ok(v.iter().map(|&x| x as f64).collect()),
+            Self::Float(v) => Ok(v.clone()),
             Self::String(_) => Err(ColumnError::NonNumerical),
         }
     }
 
-    pub fn min(&self) -> Result<f64, ColumnError> {
+    // ===================== EDA methods =====================
+
+    // =========== min and max ===========
+
+    pub fn max(&self) -> Result<f64, EDAError> {
+        match self {
+            Self::Float(v) => max(v),
+            Self::Int(v) => max(v).map(|x| x as f64),
+            Self::String(_) => Err(EDAError::WrongType),
+        }
+    }
+
+    pub fn min(&self) -> Result<f64, EDAError> {
         match self {
             Self::Float(v) => min(v),
             Self::Int(v) => min(v).map(|x| x as f64),
-            Self::String(_) => Err(ColumnError::NonNumerical),
+            Self::String(_) => Err(EDAError::WrongType),
         }
     }
 
     // =========== central tendency ===========
 
-    pub fn mean(&self) -> Result<f64, ColumnError> {
+    pub fn mean(&self) -> Result<f64, EDAError> {
         match self {
             Self::Float(v) => mean(v),
             Self::Int(v) => mean(v),
-            Self::String(_) => Err(ColumnError::NonNumerical),
+            Self::String(_) => Err(EDAError::WrongType),
         }
     }
 
-    pub fn median(&self) -> Result<f64, ColumnError> {
+    pub fn median(&self) -> Result<f64, EDAError> {
         match self {
             Self::Float(v) => median(v),
             Self::Int(v) => median(v),
-            Self::String(_) => Err(ColumnError::NonNumerical),
+            Self::String(_) => Err(EDAError::WrongType),
         }
     }
 
     // =========== quantiles and iqr ===========
 
-    pub fn linear_quantile(&self, q: f64) -> Result<f64, ColumnError> {
+    pub fn linear_quantile(&self, q: f64) -> Result<f64, EDAError> {
         match self {
             Self::Float(v) => linear_quantile(v, q),
             Self::Int(v) => linear_quantile(v, q),
-            Self::String(_) => Err(ColumnError::NonNumerical),
+            Self::String(_) => Err(EDAError::WrongType),
         }
     }
 
-    pub fn nearest_quantile(&self, q: f64) -> Result<f64, ColumnError> {
+    pub fn nearest_quantile(&self, q: f64) -> Result<f64, EDAError> {
         match self {
             Self::Float(v) => nearest_quantile(v, q),
             Self::Int(v) => nearest_quantile(v, q),
-            Self::String(_) => Err(ColumnError::NonNumerical),
+            Self::String(_) => Err(EDAError::WrongType),
         }
     }
 
-    pub fn nearest_iqr(&self, q1: f64, q2: f64) -> Result<f64, ColumnError> {
+    pub fn nearest_iqr(&self, q1: f64, q2: f64) -> Result<f64, EDAError> {
         match self {
             Self::Float(v) => nearest_iqr(v, q1, q2),
             Self::Int(v) => nearest_iqr(v, q1, q2),
-            Self::String(_) => Err(ColumnError::NonNumerical),
+            Self::String(_) => Err(EDAError::WrongType),
         }
     }
 
-    pub fn linear_iqr(&self, q1: f64, q2: f64) -> Result<f64, ColumnError> {
+    pub fn linear_iqr(&self, q1: f64, q2: f64) -> Result<f64, EDAError> {
         match self {
             Self::Float(v) => linear_iqr(v, q1, q2),
             Self::Int(v) => linear_iqr(v, q1, q2),
-            Self::String(_) => Err(ColumnError::NonNumerical),
+            Self::String(_) => Err(EDAError::WrongType),
         }
     }
 
     // =========== dispersion ===========
 
-    pub fn pop_var(&self) -> Result<f64, ColumnError> {
+    pub fn pop_var(&self) -> Result<f64, EDAError> {
         match self {
             Self::Float(v) => pop_var(v),
             Self::Int(v) => pop_var(v),
-            Self::String(_) => Err(ColumnError::NonNumerical),
+            Self::String(_) => Err(EDAError::WrongType),
         }
     }
 
-    pub fn samp_var(&self) -> Result<f64, ColumnError> {
+    pub fn samp_var(&self) -> Result<f64, EDAError> {
         match self {
             Self::Float(v) => samp_var(v),
             Self::Int(v) => samp_var(v),
-            Self::String(_) => Err(ColumnError::NonNumerical),
+            Self::String(_) => Err(EDAError::WrongType),
         }
     }
 
-    pub fn pop_std(&self) -> Result<f64, ColumnError> {
+    pub fn pop_std(&self) -> Result<f64, EDAError> {
         match self {
             Self::Float(v) => pop_std(v),
             Self::Int(v) => pop_std(v),
-            Self::String(_) => Err(ColumnError::NonNumerical),
+            Self::String(_) => Err(EDAError::WrongType),
         }
     }
 
-    pub fn samp_std(&self) -> Result<f64, ColumnError> {
+    pub fn samp_std(&self) -> Result<f64, EDAError> {
         match self {
             Self::Float(v) => samp_std(v),
             Self::Int(v) => samp_std(v),
-            Self::String(_) => Err(ColumnError::NonNumerical),
+            Self::String(_) => Err(EDAError::WrongType),
         }
     }
 
     // =========== correlation and covariance ===========
 
     // i wish i didint have to copy paste but it would be template spam
-    pub fn r_corr(&self, other: &Column) -> Result<f64, ColumnError> {
+    pub fn r_corr(&self, other: &Column) -> Result<f64, EDAError> {
         // dark magic
         match (self, &other) {
             (Self::Int(v), Self::Int(w)) => Ok(r_corr(v, w)),
             (Self::Int(v), Self::Float(w)) => Ok(r_corr(v, w)),
             (Self::Float(v), Self::Int(w)) => Ok(r_corr(v, w)),
             (Self::Float(v), Self::Float(w)) => Ok(r_corr(v, w)),
-            (_, _) => Err(ColumnError::NonNumerical),
+            (_, _) => Err(EDAError::WrongType),
         }?
     }
 
-    pub fn pop_cov(&self, other: &Column) -> Result<f64, ColumnError> {
+    pub fn pop_cov(&self, other: &Column) -> Result<f64, EDAError> {
         match (self, &other) {
             (Self::Int(v), Self::Int(w)) => Ok(pop_cov(v, w)),
             (Self::Int(v), Self::Float(w)) => Ok(pop_cov(v, w)),
             (Self::Float(v), Self::Int(w)) => Ok(pop_cov(v, w)),
             (Self::Float(v), Self::Float(w)) => Ok(pop_cov(v, w)),
-            (_, _) => Err(ColumnError::NonNumerical),
+            (_, _) => Err(EDAError::WrongType),
         }?
     }
 
-    pub fn samp_cov(&self, other: &Column) -> Result<f64, ColumnError> {
+    pub fn samp_cov(&self, other: &Column) -> Result<f64, EDAError> {
         match (self, &other) {
             (Self::Int(v), Self::Int(w)) => Ok(samp_cov(v, w)),
             (Self::Int(v), Self::Float(w)) => Ok(samp_cov(v, w)),
             (Self::Float(v), Self::Int(w)) => Ok(samp_cov(v, w)),
             (Self::Float(v), Self::Float(w)) => Ok(samp_cov(v, w)),
-            (_, _) => Err(ColumnError::NonNumerical),
+            (_, _) => Err(EDAError::WrongType),
         }?
     }
 }

@@ -2,18 +2,18 @@ use std::iter::Sum;
 
 use num_traits::{AsPrimitive, Num, ToPrimitive};
 
-use crate::stats::{ColumnError, mean};
+use crate::stats::{ColumnError, EDAError, mean};
 
 // NOTE: this can be done single-pass instead of computing everything one by one, should be optimized eventually
-pub fn r_corr<T, U>(a: &[T], b: &[U]) -> Result<f64, ColumnError>
+pub fn r_corr<T, U>(a: &[T], b: &[U]) -> Result<f64, EDAError>
 where
     T: ToPrimitive + Sum + AsPrimitive<f64>,
     U: ToPrimitive + Sum + AsPrimitive<f64>,
 {
     if a.len() != b.len() {
-        return Err(ColumnError::NonMatchingSizes);
+        return Err(EDAError::DifferentSizes);
     } else if a.len() == 0 {
-        return Err(ColumnError::Empty);
+        return Err(EDAError::EmptyData);
     }
 
     let n = a.len() as f64;
@@ -40,15 +40,15 @@ where
 
 // the shared code between population and sample covariance
 // NOTE: this can probably be done single pass too
-fn cov_no_denominator<T, U>(a: &[T], b: &[U]) -> Result<f64, ColumnError>
+fn cov_no_denominator<T, U>(a: &[T], b: &[U]) -> Result<f64, EDAError>
 where
     T: Num + ToPrimitive + Sum + AsPrimitive<f64>,
     U: Num + ToPrimitive + Sum + AsPrimitive<f64>,
 {
     if a.len() != b.len() {
-        return Err(ColumnError::NonMatchingSizes);
+        return Err(EDAError::DifferentSizes);
     } else if a.len() == 0 {
-        return Err(ColumnError::Empty);
+        return Err(EDAError::EmptyData);
     }
 
     let mean_a = mean(a)?;
@@ -62,7 +62,7 @@ where
     Ok(sum as f64)
 }
 
-pub fn pop_cov<T, U>(a: &[T], b: &[U]) -> Result<f64, ColumnError>
+pub fn pop_cov<T, U>(a: &[T], b: &[U]) -> Result<f64, EDAError>
 where
     T: Num + ToPrimitive + Sum + AsPrimitive<f64>,
     U: Num + ToPrimitive + Sum + AsPrimitive<f64>,
@@ -71,7 +71,7 @@ where
     Ok(cov / a.len() as f64)
 }
 
-pub fn samp_cov<T, U>(a: &[T], b: &[U]) -> Result<f64, ColumnError>
+pub fn samp_cov<T, U>(a: &[T], b: &[U]) -> Result<f64, EDAError>
 where
     T: Num + ToPrimitive + Sum + AsPrimitive<f64>,
     U: Num + ToPrimitive + Sum + AsPrimitive<f64>,

@@ -23,4 +23,4 @@ In under no particular order, I am planning:
 - [ ] Outlier handling
 - [ ] One-hot encoding
 - [ ] Basic probability distributions (sample of a dist., CDF, PDF, etc.)
-- [ ] Range
+- [x] Range
