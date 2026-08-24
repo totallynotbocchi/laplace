@@ -10,7 +10,7 @@ In under no particular order, I am planning:
 - [x] Min, max and quantiles
 - [x] Std and var (population and sample)
 - [ ] Handling missing data
-- [ ] Reading CSV data into a `Dataset`
+- [x] Reading CSV data into a `Dataset`
 - [ ] Linear regression
 - [ ] Logistic Regression
 - [ ] KNN

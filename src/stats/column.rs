@@ -3,7 +3,7 @@ use crate::stats::*;
 use thiserror::Error;
 
 macro_rules! eda_simple_abst {
-    ( $self:expr, $f:expr $(, $args:expr )* ) => {
+    ( $self:ident, $f:ident $(, $args:expr )* ) => {
         match $self {
             Self::Int(v) => $f(&v $(, $args)* ),
             Self::Float(v) => $f(&v $(, $args)* ),
@@ -14,7 +14,7 @@ macro_rules! eda_simple_abst {
 
 // macro for dark magic
 macro_rules! eda_other_abst {
-    ( $self:expr, $other:expr, $f:expr $(, $args:expr)* ) => {
+    ( $self:ident, $other:ident, $f:ident $(, $args:expr)* ) => {
         match ($self, &$other) {
             (Self::Int(v), Self::Int(w)) => Ok($f(v, w $(, $args)*)),
             (Self::Int(v), Self::Float(w)) => Ok($f(v, w $(, $args)*)),
