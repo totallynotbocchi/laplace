@@ -117,8 +117,7 @@ impl Dataset {
             }
 
             if (&i64_vec).len() == n_rows {
-                ds.add_column(headers[i].clone(), Column::Int(i64_vec))
-                    .unwrap();
+                ds.add_column(headers[i].clone(), Column::Int(i64_vec))?;
                 continue;
             }
 
@@ -132,14 +131,12 @@ impl Dataset {
             }
 
             if (&f64_vec).len() == n_rows {
-                ds.add_column(headers[i].clone(), Column::Float(f64_vec))
-                    .unwrap();
+                ds.add_column(headers[i].clone(), Column::Float(f64_vec))?;
                 continue;
             }
 
             // if it fails now, it must be a string
-            ds.add_column(headers[i].clone(), Column::String(col_elements))
-                .unwrap()
+            ds.add_column(headers[i].clone(), Column::String(col_elements))?;
         }
 
         Ok(ds)
@@ -190,5 +187,11 @@ mod tests {
         for (col_name, col_data) in ds.get_columns() {
             println!("{col_name}: {:?}", col_data);
         }
+    }
+
+    #[test]
+    #[should_panic]
+    fn csv_failure() {
+        let _ = Dataset::from_string(String::from("a,b\n\"unterminated")).unwrap();
     }
 }
