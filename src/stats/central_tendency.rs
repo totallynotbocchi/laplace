@@ -1,8 +1,8 @@
-use std::iter::Sum;
+use std::iter::{Product, Sum};
 
 use num_traits::{Num, ToPrimitive};
 
-use crate::stats::{Column, ColumnError, EDAError};
+use crate::stats::EDAError;
 
 pub fn min<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, EDAError> {
     if data.len() == 0 {
@@ -71,6 +71,39 @@ where
         .sum::<f64>();
 
     Ok(sum / data.len() as f64)
+}
+
+pub fn geometric_mean<T: Num + ToPrimitive + Copy + Product>(data: &[T]) -> Result<f64, EDAError> {
+    let prod = data.iter().copied().product::<T>().to_f64().unwrap();
+    Ok(prod.powf(1. / data.len() as f64))
+}
+
+fn is_valid_percent(p: f64) -> bool {
+    p >= 0. && p <= 1.
+}
+
+pub fn trimmed_mean<T: Num + ToPrimitive + Copy + Sum>(
+    data: &[T],
+    left: f64,
+    right: f64,
+) -> Result<f64, EDAError> {
+    if !is_valid_percent(left) || !is_valid_percent(right) {
+        return Err(EDAError::InvalidParameter {
+            message: format!(
+                "Values have to be valid percentages between 0-1, not {left} and {right}."
+            ),
+        });
+    }
+
+    // cut the data at the first left% and the data at the last right% by ignoring the respective
+    // indices (quantiles)
+    let start_idx = (left * data.len() as f64) as usize;
+    let end_idx = (data.len() as f64 - right * data.len() as f64) as usize;
+
+    let data_slice = &data[start_idx..end_idx];
+    let sum = data_slice.iter().copied().sum::<T>().to_f64().unwrap();
+
+    Ok(sum / data_slice.len() as f64)
 }
 
 pub fn median<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, EDAError> {
@@ -166,5 +199,22 @@ mod tests {
         let wm = weighted_mean(&arr, &weights).unwrap();
         let nm = mean(&arr).unwrap();
         assert_eq!(wm, nm);
+    }
+
+    #[test]
+    fn geometric_mean_correctness() {
+        let arr = [1, 3, 6, 12];
+
+        let gm = geometric_mean(&arr).unwrap();
+        assert_eq!(gm, 216_f64.powf(1. / 4.));
+    }
+
+    #[test]
+    fn small_trimmed_mean() {
+        let arr = (1..=10).collect::<Vec<i32>>();
+
+        // 10% of 10 is 1, so we remove the min and max
+        let tm = trimmed_mean(&arr, 0.1, 0.1).unwrap();
+        assert_eq!(tm, 5.5);
     }
 }

@@ -2,7 +2,7 @@ use std::iter::Sum;
 
 use num_traits::{AsPrimitive, Num, ToPrimitive};
 
-use crate::stats::{ColumnError, EDAError, mean};
+use crate::stats::{EDAError, mean};
 
 fn is_valid_quantile(q: f64) -> bool {
     q >= 0. && q <= 1.

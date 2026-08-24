@@ -14,7 +14,7 @@ In under no particular order, I am planning:
 - [ ] Linear regression
 - [ ] Logistic Regression
 - [ ] KNN
-- [ ] Weighted mean, geometric mean, etc.
+- [x] Weighted mean, geometric mean, etc.
 - [x] Correlation and covariance
 - [ ] Grouping data by column
 - [ ] More error/metric functions (like RMSE, R^2 and accuracy)

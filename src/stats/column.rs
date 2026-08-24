@@ -2,6 +2,29 @@ use crate::stats::EDAError;
 use crate::stats::*;
 use thiserror::Error;
 
+macro_rules! eda_simple_abst {
+    ( $self:expr, $f:expr $(, $args:expr )* ) => {
+        match $self {
+            Self::Int(v) => $f(&v $(, $args)* ),
+            Self::Float(v) => $f(&v $(, $args)* ),
+            Self::String(_) => Err(EDAError::WrongType),
+        }
+    };
+}
+
+// macro for dark magic
+macro_rules! eda_other_abst {
+    ( $self:expr, $other:expr, $f:expr $(, $args:expr)* ) => {
+        match ($self, &$other) {
+            (Self::Int(v), Self::Int(w)) => Ok($f(v, w $(, $args)*)),
+            (Self::Int(v), Self::Float(w)) => Ok($f(v, w $(, $args)*)),
+            (Self::Float(v), Self::Int(w)) => Ok($f(v, w $(, $args)*)),
+            (Self::Float(v), Self::Float(w)) => Ok($f(v, w $(, $args)*)),
+            (_, _) => Err(EDAError::WrongType),
+        }
+    };
+}
+
 // error type
 #[derive(Error, Debug, PartialEq, PartialOrd)]
 pub enum ColumnError {
@@ -35,7 +58,7 @@ impl Column {
     pub fn sort(mut self) -> Self {
         match &mut self {
             Self::Int(v) => v.sort(),
-            Self::Float(v) => v.sort_by(|a, b| a.total_cmp(b)),
+            Self::Float(v) => v.sort_by(|a, b| a.total_cmp(b)), // handle NaN and inf for f64
             Self::String(_) => {}
         };
 
@@ -43,7 +66,7 @@ impl Column {
     }
 
     // NOTE: this copies data
-    pub fn as_f64_slice(&self) -> Result<Vec<f64>, ColumnError> {
+    pub fn as_f64_vec(&self) -> Result<Vec<f64>, ColumnError> {
         match self {
             Self::Int(v) => Ok(v.iter().map(|&x| x as f64).collect()),
             Self::Float(v) => Ok(v.clone()),
@@ -56,6 +79,7 @@ impl Column {
     // =========== min and max ===========
 
     pub fn max(&self) -> Result<f64, EDAError> {
+        // no macro magic :<
         match self {
             Self::Float(v) => max(v),
             Self::Int(v) => max(v).map(|x| x as f64),
@@ -74,121 +98,77 @@ impl Column {
     // =========== central tendency ===========
 
     pub fn mean(&self) -> Result<f64, EDAError> {
-        match self {
-            Self::Float(v) => mean(v),
-            Self::Int(v) => mean(v),
-            Self::String(_) => Err(EDAError::WrongType),
-        }
+        // remember, the macro expands to:
+        //
+        //      match self {
+        //          Self::Float(v) => <method>(v, .. ),
+        //          Self::Int(v) => <method>(v, ...),
+        //          Self::String(_) => Err(EDAError::WrongType),
+        //      }
+
+        eda_simple_abst!(self, mean)
+    }
+
+    pub fn geometric_mean(&self) -> Result<f64, EDAError> {
+        eda_simple_abst!(self, geometric_mean)
+    }
+
+    pub fn trimmed_mean(&self, left: f64, right: f64) -> Result<f64, EDAError> {
+        eda_simple_abst!(self, trimmed_mean, left, right)
     }
 
     pub fn median(&self) -> Result<f64, EDAError> {
-        match self {
-            Self::Float(v) => median(v),
-            Self::Int(v) => median(v),
-            Self::String(_) => Err(EDAError::WrongType),
-        }
+        eda_simple_abst!(self, median)
     }
 
     // =========== quantiles and iqr ===========
 
     pub fn linear_quantile(&self, q: f64) -> Result<f64, EDAError> {
-        match self {
-            Self::Float(v) => linear_quantile(v, q),
-            Self::Int(v) => linear_quantile(v, q),
-            Self::String(_) => Err(EDAError::WrongType),
-        }
+        eda_simple_abst!(self, linear_quantile, q)
     }
 
     pub fn nearest_quantile(&self, q: f64) -> Result<f64, EDAError> {
-        match self {
-            Self::Float(v) => nearest_quantile(v, q),
-            Self::Int(v) => nearest_quantile(v, q),
-            Self::String(_) => Err(EDAError::WrongType),
-        }
+        eda_simple_abst!(self, nearest_quantile, q)
     }
 
     pub fn nearest_iqr(&self, q1: f64, q2: f64) -> Result<f64, EDAError> {
-        match self {
-            Self::Float(v) => nearest_iqr(v, q1, q2),
-            Self::Int(v) => nearest_iqr(v, q1, q2),
-            Self::String(_) => Err(EDAError::WrongType),
-        }
+        eda_simple_abst!(self, nearest_iqr, q1, q2)
     }
 
     pub fn linear_iqr(&self, q1: f64, q2: f64) -> Result<f64, EDAError> {
-        match self {
-            Self::Float(v) => linear_iqr(v, q1, q2),
-            Self::Int(v) => linear_iqr(v, q1, q2),
-            Self::String(_) => Err(EDAError::WrongType),
-        }
+        eda_simple_abst!(self, linear_iqr, q1, q2)
     }
 
     // =========== dispersion ===========
 
     pub fn pop_var(&self) -> Result<f64, EDAError> {
-        match self {
-            Self::Float(v) => pop_var(v),
-            Self::Int(v) => pop_var(v),
-            Self::String(_) => Err(EDAError::WrongType),
-        }
+        eda_simple_abst!(self, pop_var)
     }
 
     pub fn samp_var(&self) -> Result<f64, EDAError> {
-        match self {
-            Self::Float(v) => samp_var(v),
-            Self::Int(v) => samp_var(v),
-            Self::String(_) => Err(EDAError::WrongType),
-        }
+        eda_simple_abst!(self, samp_var)
     }
 
     pub fn pop_std(&self) -> Result<f64, EDAError> {
-        match self {
-            Self::Float(v) => pop_std(v),
-            Self::Int(v) => pop_std(v),
-            Self::String(_) => Err(EDAError::WrongType),
-        }
+        eda_simple_abst!(self, pop_std)
     }
 
     pub fn samp_std(&self) -> Result<f64, EDAError> {
-        match self {
-            Self::Float(v) => samp_std(v),
-            Self::Int(v) => samp_std(v),
-            Self::String(_) => Err(EDAError::WrongType),
-        }
+        eda_simple_abst!(self, samp_std)
     }
 
     // =========== correlation and covariance ===========
 
-    // i wish i didint have to copy paste but it would be template spam
     pub fn r_corr(&self, other: &Column) -> Result<f64, EDAError> {
-        // dark magic
-        match (self, &other) {
-            (Self::Int(v), Self::Int(w)) => Ok(r_corr(v, w)),
-            (Self::Int(v), Self::Float(w)) => Ok(r_corr(v, w)),
-            (Self::Float(v), Self::Int(w)) => Ok(r_corr(v, w)),
-            (Self::Float(v), Self::Float(w)) => Ok(r_corr(v, w)),
-            (_, _) => Err(EDAError::WrongType),
-        }?
+        eda_other_abst!(self, other, r_corr)?
     }
 
     pub fn pop_cov(&self, other: &Column) -> Result<f64, EDAError> {
-        match (self, &other) {
-            (Self::Int(v), Self::Int(w)) => Ok(pop_cov(v, w)),
-            (Self::Int(v), Self::Float(w)) => Ok(pop_cov(v, w)),
-            (Self::Float(v), Self::Int(w)) => Ok(pop_cov(v, w)),
-            (Self::Float(v), Self::Float(w)) => Ok(pop_cov(v, w)),
-            (_, _) => Err(EDAError::WrongType),
-        }?
+        eda_other_abst!(self, other, pop_cov)?
     }
 
     pub fn samp_cov(&self, other: &Column) -> Result<f64, EDAError> {
-        match (self, &other) {
-            (Self::Int(v), Self::Int(w)) => Ok(samp_cov(v, w)),
-            (Self::Int(v), Self::Float(w)) => Ok(samp_cov(v, w)),
-            (Self::Float(v), Self::Int(w)) => Ok(samp_cov(v, w)),
-            (Self::Float(v), Self::Float(w)) => Ok(samp_cov(v, w)),
-            (_, _) => Err(EDAError::WrongType),
-        }?
+        eda_other_abst!(self, other, samp_cov)?
     }
 }
 
