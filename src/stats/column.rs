@@ -41,6 +41,7 @@ pub enum ColumnError {
 pub type ColumnResult<T> = Result<T, ColumnError>;
 
 // a single cell in a column/dataset
+#[derive(Clone)]
 pub enum Value {
     Int(i64),
     Float(f64),
@@ -48,7 +49,7 @@ pub enum Value {
 }
 
 // a single column of data, only of one type
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 pub enum Column {
     Int(Vec<i64>),
     Float(Vec<f64>),

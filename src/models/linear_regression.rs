@@ -11,13 +11,13 @@ pub struct LinearRegression {
 }
 
 impl LinearRegression {
-    pub fn new(iters: usize) -> Self {
+    pub fn new(iters: usize, lr: f64) -> Self {
         Self {
             iters,
             loss: mse,           // default
             loss_grad: mse_grad, // default
             params: Vec::new(),
-            learning_rate: 0.01,
+            learning_rate: lr,
         }
     }
 
@@ -92,7 +92,7 @@ mod tests {
         let x = vec![vec![1.], vec![2.], vec![3.], vec![4.]]; // 4 rows, 1 feature each
         let y = vec![2., 4., 6., 8.]; // 4 answers
 
-        let mut model = LinearRegression::new(500);
+        let mut model = LinearRegression::new(500, 0.01);
         let _ = model.fit(&x, &y);
 
         let test = vec![3.];

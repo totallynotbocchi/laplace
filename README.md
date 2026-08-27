@@ -14,13 +14,13 @@ and more to come.
 For example, using linear regression looks like this:
 
 ```rust
-use laplace::models::LinearRegression;
+use laplace::models::{LinearRegression, Model};
 
 fn main() {
     let x_train = vec![vec![1.], vec![2.], vec![3.], vec![4.]];
     let y_train = vec![2., 4., 6., 8.];
 
-    let mut model = LinearRegression::new(100);
+    let mut model = LinearRegression::new(100, 0.1);
     let _ = model.fit(&x_train, &y_train);
 
     let test = vec![3.];

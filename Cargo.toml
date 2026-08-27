@@ -3,6 +3,9 @@ name = "laplace"
 version = "0.1.0"
 edition = "2024"
 
+[profile.dev]
+debug = false
+
 [dependencies]
 csv = "1.4.0"
 num-traits = "0.2.19"
@@ -11,9 +14,16 @@ thiserror = "2.0.20"
 [dev-dependencies]
 criterion = "0.5.1"
 
+# benchmarks
 [[bench]]
 name = "benchmarks"
 harness = false
 
-[profile.dev]
-debug = false
+# examples
+[[example]]
+name = "student"
+path = "./examples/student_performance.rs"
+
+[[example]]
+name = "readme"
+path = "./examples/root_readme_display.rs"
