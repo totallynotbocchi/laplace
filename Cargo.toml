@@ -18,12 +18,3 @@ criterion = "0.5.1"
 [[bench]]
 name = "benchmarks"
 harness = false
-
-# examples
-[[example]]
-name = "student"
-path = "./examples/student_performance.rs"
-
-[[example]]
-name = "readme"
-path = "./examples/root_readme_display.rs"

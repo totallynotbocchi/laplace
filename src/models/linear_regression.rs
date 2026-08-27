@@ -41,7 +41,8 @@ impl Model for LinearRegression {
 
         // run all iterations
         for iter in 1..=self.iters {
-            println!("Iteration no. {iter}");
+            // TODO: make this run in verbose logging mode
+            // println!("Iteration no. {iter}");
 
             // calculate loss per row of input
             let y_pred = train_data // loops thru rows
