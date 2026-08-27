@@ -7,7 +7,7 @@ use std::{
     io::Read,
 };
 
-use crate::stats::column::Column;
+use crate::stats::{Value, column::Column};
 
 use thiserror::Error;
 
@@ -29,19 +29,21 @@ pub enum DatasetError {
     CSVError,
 }
 
+pub type DatasetResult<T> = Result<T, DatasetError>;
+
 pub struct Dataset {
-    data: HashMap<String, Column>,
+    columns: HashMap<String, Column>,
 }
 
 impl Dataset {
     pub fn new() -> Self {
         Self {
-            data: HashMap::new(),
+            columns: HashMap::new(),
         }
     }
 
-    pub fn add_column(&mut self, key: String, col: Column) -> Result<(), DatasetError> {
-        match self.data.entry(key.to_string()) {
+    pub fn add_column(&mut self, key: String, col: Column) -> DatasetResult<()> {
+        match self.columns.entry(key.to_string()) {
             Vacant(entry) => {
                 entry.insert(col);
                 Ok(())
@@ -51,20 +53,20 @@ impl Dataset {
     }
 
     pub fn get_columns(&self) -> &HashMap<String, Column> {
-        &self.data
+        &self.columns
     }
 
     // get immutable reference to column
-    pub fn get_column(&self, key: &'static str) -> Result<&Column, DatasetError> {
-        match self.data.get(key) {
+    pub fn get_column(&self, key: &'static str) -> DatasetResult<&Column> {
+        match self.columns.get(key) {
             Some(value) => Ok(value),
             None => Err(DatasetError::IndexInexistent),
         }
     }
 
     // get mutable reference to column
-    pub fn get_column_mut(&mut self, key: &'static str) -> Result<&mut Column, DatasetError> {
-        match self.data.entry(key.to_string()) {
+    pub fn get_column_mut(&mut self, key: &'static str) -> DatasetResult<&mut Column> {
+        match self.columns.entry(key.to_string()) {
             // we use .into_mut rather than .get_mut because it takes ownership of the entry, and
             // it can safely return a mutable reference to the column now
             Occupied(entry) => Ok(entry.into_mut()),
@@ -72,7 +74,22 @@ impl Dataset {
         }
     }
 
-    pub fn from_string(data: String) -> Result<Dataset, DatasetError> {
+    // get immutable reference to a row
+    pub fn get_row(&self, idx: usize) -> DatasetResult<Vec<Value>> {
+        let mut row: Vec<Value> = Vec::with_capacity(self.columns.len());
+
+        for (_, col_data) in &self.columns {
+            match col_data {
+                Column::Float(v) => row.push(Value::Float(v[idx])),
+                Column::Int(v) => row.push(Value::Int(v[idx])),
+                Column::String(v) => row.push(Value::String(v[idx].clone())),
+            }
+        }
+
+        Ok(row)
+    }
+
+    pub fn from_string(data: String) -> DatasetResult<Dataset> {
         let mut rdr = csv::Reader::from_reader(data.as_bytes());
 
         // define dataset and data
@@ -142,7 +159,7 @@ impl Dataset {
         Ok(ds)
     }
 
-    pub fn read_csv(path: &'static str) -> Result<Dataset, DatasetError> {
+    pub fn read_csv(path: &'static str) -> DatasetResult<Dataset> {
         let buf: String = fs::read_to_string(path).map_err(|_| DatasetError::IndexInUse)?;
         Dataset::from_string(buf)
     }

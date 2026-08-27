@@ -38,6 +38,15 @@ pub enum ColumnError {
     NonNumerical,
 }
 
+pub type ColumnResult<T> = Result<T, ColumnError>;
+
+// a single cell in a column/dataset
+pub enum Value {
+    Int(i64),
+    Float(f64),
+    String(String),
+}
+
 // a single column of data, only of one type
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum Column {
@@ -65,8 +74,25 @@ impl Column {
         self
     }
 
+    pub fn get(&self, idx: usize) -> ColumnResult<Value> {
+        match self {
+            Column::Int(v) => {
+                let value = *v.get(idx).ok_or(ColumnError::NonNumerical)?;
+                Ok(Value::Int(value))
+            }
+            Column::Float(v) => {
+                let value = *v.get(idx).ok_or(ColumnError::NonNumerical)?;
+                Ok(Value::Float(value))
+            }
+            Column::String(v) => {
+                let value = v.get(idx).ok_or(ColumnError::NonNumerical)?;
+                Ok(Value::String(value.clone()))
+            }
+        }
+    }
+
     // NOTE: this copies data
-    pub fn as_f64_vec(&self) -> Result<Vec<f64>, ColumnError> {
+    pub fn as_f64_vec(&self) -> ColumnResult<Vec<f64>> {
         match self {
             Self::Int(v) => Ok(v.iter().map(|&x| x as f64).collect()),
             Self::Float(v) => Ok(v.clone()),
@@ -78,7 +104,7 @@ impl Column {
 
     // =========== min and max ===========
 
-    pub fn max(&self) -> Result<f64, EDAError> {
+    pub fn max(&self) -> EDAResult<f64> {
         // no macro magic :<
         match self {
             Self::Float(v) => max(v),
@@ -87,7 +113,7 @@ impl Column {
         }
     }
 
-    pub fn min(&self) -> Result<f64, EDAError> {
+    pub fn min(&self) -> EDAResult<f64> {
         match self {
             Self::Float(v) => min(v),
             Self::Int(v) => min(v).map(|x| x as f64),
@@ -97,7 +123,7 @@ impl Column {
 
     // =========== central tendency ===========
 
-    pub fn mean(&self) -> Result<f64, EDAError> {
+    pub fn mean(&self) -> EDAResult<f64> {
         // remember, the macro expands to:
         //
         //      match self {
@@ -109,65 +135,65 @@ impl Column {
         eda_simple_abst!(self, mean)
     }
 
-    pub fn geometric_mean(&self) -> Result<f64, EDAError> {
+    pub fn geometric_mean(&self) -> EDAResult<f64> {
         eda_simple_abst!(self, geometric_mean)
     }
 
-    pub fn trimmed_mean(&self, left: f64, right: f64) -> Result<f64, EDAError> {
+    pub fn trimmed_mean(&self, left: f64, right: f64) -> EDAResult<f64> {
         eda_simple_abst!(self, trimmed_mean, left, right)
     }
 
-    pub fn median(&self) -> Result<f64, EDAError> {
+    pub fn median(&self) -> EDAResult<f64> {
         eda_simple_abst!(self, median)
     }
 
     // =========== quantiles and iqr ===========
 
-    pub fn linear_quantile(&self, q: f64) -> Result<f64, EDAError> {
+    pub fn linear_quantile(&self, q: f64) -> EDAResult<f64> {
         eda_simple_abst!(self, linear_quantile, q)
     }
 
-    pub fn nearest_quantile(&self, q: f64) -> Result<f64, EDAError> {
+    pub fn nearest_quantile(&self, q: f64) -> EDAResult<f64> {
         eda_simple_abst!(self, nearest_quantile, q)
     }
 
-    pub fn nearest_iqr(&self, q1: f64, q2: f64) -> Result<f64, EDAError> {
+    pub fn nearest_iqr(&self, q1: f64, q2: f64) -> EDAResult<f64> {
         eda_simple_abst!(self, nearest_iqr, q1, q2)
     }
 
-    pub fn linear_iqr(&self, q1: f64, q2: f64) -> Result<f64, EDAError> {
+    pub fn linear_iqr(&self, q1: f64, q2: f64) -> EDAResult<f64> {
         eda_simple_abst!(self, linear_iqr, q1, q2)
     }
 
     // =========== dispersion ===========
 
-    pub fn pop_var(&self) -> Result<f64, EDAError> {
+    pub fn pop_var(&self) -> EDAResult<f64> {
         eda_simple_abst!(self, pop_var)
     }
 
-    pub fn samp_var(&self) -> Result<f64, EDAError> {
+    pub fn samp_var(&self) -> EDAResult<f64> {
         eda_simple_abst!(self, samp_var)
     }
 
-    pub fn pop_std(&self) -> Result<f64, EDAError> {
+    pub fn pop_std(&self) -> EDAResult<f64> {
         eda_simple_abst!(self, pop_std)
     }
 
-    pub fn samp_std(&self) -> Result<f64, EDAError> {
+    pub fn samp_std(&self) -> EDAResult<f64> {
         eda_simple_abst!(self, samp_std)
     }
 
     // =========== correlation and covariance ===========
 
-    pub fn r_corr(&self, other: &Column) -> Result<f64, EDAError> {
+    pub fn r_corr(&self, other: &Column) -> EDAResult<f64> {
         eda_other_abst!(self, other, r_corr)?
     }
 
-    pub fn pop_cov(&self, other: &Column) -> Result<f64, EDAError> {
+    pub fn pop_cov(&self, other: &Column) -> EDAResult<f64> {
         eda_other_abst!(self, other, pop_cov)?
     }
 
-    pub fn samp_cov(&self, other: &Column) -> Result<f64, EDAError> {
+    pub fn samp_cov(&self, other: &Column) -> EDAResult<f64> {
         eda_other_abst!(self, other, samp_cov)?
     }
 }

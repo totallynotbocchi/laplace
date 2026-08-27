@@ -5,8 +5,8 @@ pub use mse::mse;
 pub use mse::mse_grad;
 pub use rmse::rmse;
 
-type LossFn = fn(&[f64], &[f64]) -> f64;
-type LossGradFn = fn(&[f64], &[f64]) -> Vec<f64>;
+pub type LossFn = fn(&[f64], &[f64]) -> f64;
+pub type LossGradFn = fn(&[f64], &[f64]) -> Vec<f64>;
 
 #[cfg(test)]
 mod tests {

@@ -2,13 +2,13 @@ use std::iter::Sum;
 
 use num_traits::{AsPrimitive, Num, ToPrimitive};
 
-use crate::stats::{EDAError, mean};
+use crate::stats::{EDAError, EDAResult, mean};
 
 fn is_valid_quantile(q: f64) -> bool {
     q >= 0. && q <= 1.
 }
 
-pub fn linear_quantile<T: Num + ToPrimitive>(data: &[T], q: f64) -> Result<f64, EDAError> {
+pub fn linear_quantile<T: Num + ToPrimitive>(data: &[T], q: f64) -> EDAResult<f64> {
     // linear interpolation has the formula:
     //   x_floor(q) + (q - floor(q)) (x_ceil(q) - x_floor(q))
     // where q is the quantile
@@ -36,7 +36,7 @@ pub fn linear_quantile<T: Num + ToPrimitive>(data: &[T], q: f64) -> Result<f64, 
     Ok(x_i + (d * x_diff))
 }
 
-pub fn nearest_quantile<T: AsPrimitive<f64>>(data: &[T], q: f64) -> Result<f64, EDAError> {
+pub fn nearest_quantile<T: AsPrimitive<f64>>(data: &[T], q: f64) -> EDAResult<f64> {
     let n = data.len();
 
     if n == 0 {
@@ -51,7 +51,7 @@ pub fn nearest_quantile<T: AsPrimitive<f64>>(data: &[T], q: f64) -> Result<f64, 
     Ok(data[idx as usize].as_())
 }
 
-pub fn linear_iqr<T: Num + ToPrimitive>(data: &[T], q1: f64, q2: f64) -> Result<f64, EDAError> {
+pub fn linear_iqr<T: Num + ToPrimitive>(data: &[T], q1: f64, q2: f64) -> EDAResult<f64> {
     if q1 > q2 {
         return Err(EDAError::InvalidParameter {
             message: format!(
@@ -66,7 +66,7 @@ pub fn linear_iqr<T: Num + ToPrimitive>(data: &[T], q1: f64, q2: f64) -> Result<
     Ok(val2 - val1)
 }
 
-pub fn nearest_iqr<T: AsPrimitive<f64>>(data: &[T], q1: f64, q2: f64) -> Result<f64, EDAError> {
+pub fn nearest_iqr<T: AsPrimitive<f64>>(data: &[T], q1: f64, q2: f64) -> EDAResult<f64> {
     if q1 > q2 {
         return Err(EDAError::InvalidParameter {
             message: format!(
@@ -82,7 +82,7 @@ pub fn nearest_iqr<T: AsPrimitive<f64>>(data: &[T], q1: f64, q2: f64) -> Result<
 }
 
 // the shared code between population and sample standard deviation/variance
-fn var_no_denominator<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, EDAError> {
+fn var_no_denominator<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> EDAResult<f64> {
     if data.len() == 0 {
         return Err(EDAError::EmptyData);
     }
@@ -96,22 +96,22 @@ fn var_no_denominator<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f
     Ok(sum)
 }
 
-pub fn samp_var<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, EDAError> {
+pub fn samp_var<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> EDAResult<f64> {
     let var = var_no_denominator(data)?;
     Ok(var / (data.len() - 1) as f64)
 }
 
-pub fn pop_var<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, EDAError> {
+pub fn pop_var<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> EDAResult<f64> {
     let var = var_no_denominator(data)?;
     Ok(var / data.len() as f64)
 }
 
-pub fn samp_std<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, EDAError> {
+pub fn samp_std<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> EDAResult<f64> {
     let var = var_no_denominator(data)?;
     Ok(var.sqrt() / ((data.len() - 1) as f64).sqrt())
 }
 
-pub fn pop_std<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, EDAError> {
+pub fn pop_std<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> EDAResult<f64> {
     let var = var_no_denominator(data)?;
     Ok(var.sqrt() / (data.len() as f64).sqrt())
 }

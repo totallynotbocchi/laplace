@@ -2,9 +2,9 @@ use std::iter::{Product, Sum};
 
 use num_traits::{Num, ToPrimitive};
 
-use crate::stats::EDAError;
+use crate::stats::{EDAError, EDAResult};
 
-pub fn min<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, EDAError> {
+pub fn min<T: Num + Copy + PartialOrd>(data: &[T]) -> EDAResult<T> {
     if data.len() == 0 {
         return Err(EDAError::EmptyData);
     }
@@ -19,7 +19,7 @@ pub fn min<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, EDAError> {
     Ok(min)
 }
 
-pub fn max<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, EDAError> {
+pub fn max<T: Num + Copy + PartialOrd>(data: &[T]) -> EDAResult<T> {
     if data.len() == 0 {
         return Err(EDAError::EmptyData);
     }
@@ -34,14 +34,14 @@ pub fn max<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, EDAError> {
     Ok(max)
 }
 
-pub fn range<T: Num + Copy + PartialOrd>(data: &[T]) -> Result<T, EDAError> {
+pub fn range<T: Num + Copy + PartialOrd>(data: &[T]) -> EDAResult<T> {
     let range = max(data)? - min(data)?;
     Ok(range)
 }
 
 // NOTE: this (and everything using these conversions) should pretty much never fail,
 // so unwrapping that conversion is okay!!1!
-pub fn mean<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, EDAError> {
+pub fn mean<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> EDAResult<f64> {
     let n = data.len();
 
     if n == 0 {
@@ -52,7 +52,7 @@ pub fn mean<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, EDAErr
     Ok(sum / n as f64)
 }
 
-pub fn weighted_mean<T, U>(data: &[T], weights: &[U]) -> Result<f64, EDAError>
+pub fn weighted_mean<T, U>(data: &[T], weights: &[U]) -> EDAResult<f64>
 where
     T: Num + ToPrimitive + Copy + Sum,
     U: Num + ToPrimitive + Copy,
@@ -73,7 +73,7 @@ where
     Ok(sum / data.len() as f64)
 }
 
-pub fn geometric_mean<T: Num + ToPrimitive + Copy + Product>(data: &[T]) -> Result<f64, EDAError> {
+pub fn geometric_mean<T: Num + ToPrimitive + Copy + Product>(data: &[T]) -> EDAResult<f64> {
     let prod = data.iter().copied().product::<T>().to_f64().unwrap();
     Ok(prod.powf(1. / data.len() as f64))
 }
@@ -86,7 +86,7 @@ pub fn trimmed_mean<T: Num + ToPrimitive + Copy + Sum>(
     data: &[T],
     left: f64,
     right: f64,
-) -> Result<f64, EDAError> {
+) -> EDAResult<f64> {
     if !is_valid_percent(left) || !is_valid_percent(right) {
         return Err(EDAError::InvalidParameter {
             message: format!(
@@ -106,7 +106,7 @@ pub fn trimmed_mean<T: Num + ToPrimitive + Copy + Sum>(
     Ok(sum / data_slice.len() as f64)
 }
 
-pub fn median<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> Result<f64, EDAError> {
+pub fn median<T: Num + ToPrimitive + Copy + Sum>(data: &[T]) -> EDAResult<f64> {
     let med: f64;
     let n = data.len();
 
