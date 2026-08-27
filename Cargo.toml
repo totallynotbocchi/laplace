@@ -5,7 +5,6 @@ edition = "2024"
 
 [dependencies]
 csv = "1.4.0"
-ndarray = "0.17.2"
 num-traits = "0.2.19"
 thiserror = "2.0.20"
 

@@ -1,6 +1,32 @@
 # Laplace
 
-Laplace is a toy ML library written in Rust, from scratch.
+Laplace is a toy ML library written in Rust with (most) features from scratch.
+
+It contains methods and utilities for:
+
+- **Descriptive Statistics**
+- **Linear Algebra**
+- **Multiple ML Models** (like Linear Regression)
+and more to come.
+
+## Usage
+
+For example, using linear regression looks like this:
+
+```rust
+use laplace::models::LinearRegression;
+
+fn main() {
+    let x_train = vec![vec![1.], vec![2.], vec![3.], vec![4.]];
+    let y_train = vec![2., 4., 6., 8.];
+
+    let mut model = LinearRegression::new(100);
+    let _ = model.fit(&x_train, &y_train);
+
+    let test = vec![3.];
+    println!("{:?}", model.predict(&test));
+}
+```
 
 ## To-Do's
 
@@ -11,7 +37,7 @@ In under no particular order, I am planning:
 - [x] Std and var (population and sample)
 - [ ] Handling missing data
 - [x] Reading CSV data into a `Dataset`
-- [ ] Linear regression
+- [x] Linear regression
 - [ ] Logistic Regression
 - [ ] KNN
 - [x] Weighted mean, geometric mean, etc.
@@ -24,3 +50,4 @@ In under no particular order, I am planning:
 - [ ] One-hot encoding
 - [ ] Basic probability distributions (sample of a dist., CDF, PDF, etc.)
 - [x] Range
+- [ ] Tensor and linear algebra methods
