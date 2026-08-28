@@ -4,14 +4,13 @@
 
 # Laplace
 
-Laplace is a toy ML library written in Rust with (most) features written from scratch.
+Laplace is a toy ML/math library written in Rust, mostly from scratch.
 
-It contains methods and utilities for:
+Right now it contains utilities for:
 
-- **Descriptive Statistics**
-- **Linear Algebra**
-- **Machine Learning Models**
-and more.
+- **Descriptive statistics**
+- **Linear algebra**
+- **Machine learning**
 
 ## About
 
@@ -31,7 +30,7 @@ fn main() {
     let y_train = vec![2., 4., 6., 8.];
 
     let mut model = LinearRegression::new(100, 0.1);
-    let _ = model.fit(&x_train, &y_train);
+    let _ = model.fit(&x_train, &y_train).unwrap();
 
     let test = vec![3.];
     println!("{:?}", model.predict(&test));
@@ -56,7 +55,7 @@ cargo run --example readme
 
 ## Roadmap
 
-In no particular order, I am planning:
+The features that I want to try to add are roughly:
 
 - Descriptive statistics
   - [x] Mean and median
@@ -93,5 +92,6 @@ In no particular order, I am planning:
   - [ ] Numerical approximations (for things like derivatives and integrals)
 - Misc
   - [ ] Lua API
-  - [ ] Get rid of the unfathomable amounts of `.unwrap()`
+  - [ ] Get rid of the unfathomable amount of `.unwrap()`
   - [ ] Make better errors
+  - [ ] My own CSV reading

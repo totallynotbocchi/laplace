@@ -1,4 +1,4 @@
-use crate::models::{Model, ModelResult};
+use crate::models::{Model, ModelError, ModelResult};
 
 #[derive(Debug, Clone, Copy)]
 pub enum DistanceMethod {
@@ -11,7 +11,7 @@ pub struct KNNRegression {
     distance_method: DistanceMethod,
 
     train_data: Vec<Vec<f64>>,
-    answers: Vec<f64>,
+    answer_data: Vec<f64>,
 }
 
 impl KNNRegression {
@@ -21,7 +21,7 @@ impl KNNRegression {
             distance_method,
 
             train_data: Vec::new(),
-            answers: Vec::new(),
+            answer_data: Vec::new(),
         }
     }
 
@@ -43,12 +43,24 @@ impl KNNRegression {
 impl Model for KNNRegression {
     // NOTE: this copies data
     fn fit(&mut self, train_data: &Vec<Vec<f64>>, answer_data: &Vec<f64>) -> ModelResult<()> {
+        if train_data.len() != answer_data.len() {
+            return Err(ModelError::TrainAndAnswersSizesDiffer);
+        } else if train_data.len() == 0 {
+            return Err(ModelError::EmptyData);
+        }
+
         self.train_data = train_data.clone();
-        self.answers = answer_data.clone();
+        self.answer_data = answer_data.clone();
         Ok(())
     }
 
     fn predict(&self, data: &Vec<f64>) -> ModelResult<f64> {
+        if data.len() != self.train_data[0].len() {
+            return Err(ModelError::SizesNotMatchingParams);
+        } else if data.len() == 0 {
+            return Err(ModelError::EmptyData);
+        }
+
         // calculate distances from each point in data
         // store index and distance
         let mut distances = self
@@ -64,11 +76,27 @@ impl Model for KNNRegression {
         // get the k smallest distances and average the labels they point to
         let sum = &distances[0..self.k]
             .iter()
-            .map(|(i, _)| self.answers[*i])
+            .map(|(i, _)| self.answer_data[*i])
             .sum::<f64>();
 
         Ok(sum / self.k as f64)
     }
 }
 
-// TODO: tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn no_tie() {
+        // one input x, one output
+        let x = vec![vec![1.], vec![2.], vec![6.], vec![10.]];
+        let y = vec![1., 3., 2., 5.];
+
+        let mut knn = KNNRegression::new(2, DistanceMethod::Euclidean);
+        knn.fit(&x, &y).unwrap();
+
+        let pred = knn.predict(&vec![4.5]).unwrap();
+        assert_eq!(pred, 2.5);
+    }
+}
