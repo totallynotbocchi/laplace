@@ -1,6 +1,9 @@
-pub mod linear_regression;
+mod knn_regression;
+mod linear_regression;
 
+pub use knn_regression::KNNRegression;
 pub use linear_regression::LinearRegression;
+
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone)]

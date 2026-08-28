@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./media/icon.png" width="25%">
+</p>
+
 # Laplace
 
 Laplace is a toy ML library written in Rust with (most) features written from scratch.
@@ -72,9 +76,9 @@ In no particular order, I am planning:
   - [ ] Generalized function transformations
 - Models
   - [x] Linear regression
-  - [ ] Logistic Regression
-  - [ ] KNN
+  - [x] KNN
   - [ ] More error/metric functions (like RMSE, R^2 and accuracy)
+  - [ ] Classification variants (for KNN, linear reg., etc.)
 - Probability
   - [ ] Basic probability distributions (with samples of dists. and etc.)
   - [ ] Probability distribution methods (like CDF, PDF, etc.)
@@ -87,3 +91,7 @@ In no particular order, I am planning:
   - [ ] Linear algebra methods
   - [ ] A method like NumPy's `linspace`
   - [ ] Numerical approximations (for things like derivatives and integrals)
+- Misc
+  - [ ] Lua API
+  - [ ] Get rid of the unfathomable amounts of `.unwrap()`
+  - [ ] Make better errors
