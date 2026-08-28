@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./media/icon.png" width="25%">
+  <img src="./media/icon.svg" width="26%">
 </p>
 
 # Laplace
