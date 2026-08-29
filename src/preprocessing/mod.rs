@@ -2,11 +2,13 @@ use crate::stats::Column;
 use thiserror::Error;
 
 mod box_cox;
+mod function;
 mod min_max;
 mod yeo_johnson;
 mod z_score;
 
 pub use box_cox::*;
+pub use function::*;
 pub use min_max::*;
 pub use yeo_johnson::*;
 pub use z_score::*;

@@ -40,7 +40,7 @@ pub enum ColumnError {
 
 pub type ColumnResult<T> = Result<T, ColumnError>;
 
-// a single cell in a column/dataset
+// a single cell in a column/dataset, used when returning specific column value
 #[derive(Clone)]
 pub enum Value {
     Int(i64),
@@ -55,6 +55,8 @@ pub enum Column {
     Float(Vec<f64>),
     String(Vec<String>),
 }
+
+// TODO: make a macro for creating Columns inline
 
 impl Column {
     pub fn len(&self) -> usize {

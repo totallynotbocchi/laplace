@@ -40,7 +40,7 @@ impl Model for LinearRegression {
         self.params = vec![0.; train_data[0].len()];
 
         // run all iterations
-        for iter in 1..=self.iters {
+        for _ in 1..=self.iters {
             // TODO: make this run in verbose logging mode
             // println!("Iteration no. {iter}");
 

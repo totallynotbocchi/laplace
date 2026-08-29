@@ -1,10 +1,4 @@
-use std::{
-    collections::{
-        HashMap,
-        hash_map::Entry::{Occupied, Vacant},
-    },
-    fs,
-};
+use std::fs;
 
 use crate::stats::{Value, column::Column};
 
@@ -42,6 +36,8 @@ pub type DatasetResult<T> = Result<T, DatasetError>;
 pub struct Dataset {
     columns: Vec<(String, Column)>,
 }
+
+// TODO: make a macro for creating Datasets inline
 
 // abstraction methods for the inner Vec<(String, Column)> representation
 impl Dataset {
@@ -152,6 +148,7 @@ impl Dataset {
 
     // get the rows as a list of f64's, which is what models want
     // WARNING: please optimize this, its ass
+    // TODO: (maybe) return a flat array
     pub fn get_rows_as_vec_f64(&self) -> DatasetResult<Vec<Vec<f64>>> {
         if self.columns.is_empty() {
             return Err(DatasetError::NoColumns);

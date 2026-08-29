@@ -81,14 +81,11 @@ mod tests {
         let mut yj = YeoJohnsonTransformation::new(0.5);
         yj.fit(&col).unwrap();
 
-        let new_col = yj.transform(&col).unwrap();
-        match new_col {
-            Column::Float(output) => output
-                .iter()
-                .zip(actual)
-                .map(|(&neg, real)| assert!((neg - real).abs() < TOLERANCE))
-                .collect::<Vec<()>>(), // make the iterator run
-            _ => panic!("Impossible"),
-        };
+        let new_vec = yj.transform(&col).unwrap().as_f64_vec().unwrap();
+        let _ = new_vec
+            .iter()
+            .zip(actual)
+            .map(|(&neg, real)| assert!((neg - real).abs() < TOLERANCE))
+            .collect::<Vec<()>>(); // make the iterator run
     }
 }

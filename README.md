@@ -67,26 +67,30 @@ The features that I want to try to add are roughly:
 - Preprocessing
   - [x] Reading CSV data into a `Dataset`
   - [ ] Grouping data by column
-  - [ ] Handling missing data
+  - [ ] Handling missing data (imputation)
   - [x] Feature scaling
   - [x] Feature transformation
   - [ ] Outlier handling
   - [ ] One-hot encoding
-  - [ ] Generalized function transformations
+  - [x] Generalized function transformations
 - Models
   - [x] Linear regression
   - [x] KNN
+  - [ ] Naive bayes
+  - [ ] Polynomial regression
+  - [ ] Ridge & lasso regression
   - [ ] More error/metric functions (like RMSE, R^2 and accuracy)
   - [ ] Classification variants (for KNN, linear reg., etc.)
+  - [ ] Make linear regression have weights per column (example weighting)
 - Probability
   - [ ] Basic probability distributions (with samples of dists. and etc.)
   - [ ] Probability distribution methods (like CDF, PDF, etc.)
+  - [ ] Random number generator for arrays and scalars
 - Combinatorics
   - [ ] Permutations, combinations, etc. (optimized with gcd)
   - [ ] Larger number types
 - Numerical methods/algebra
   - [ ] Tensors
-  - [ ] Random number generator for arrays and scalars
   - [ ] Linear algebra methods
   - [ ] A method like NumPy's `linspace`
   - [ ] Numerical approximations (for things like derivatives and integrals)
