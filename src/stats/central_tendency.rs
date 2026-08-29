@@ -1,6 +1,5 @@
-use std::iter::{Product, Sum};
-
 use num_traits::{Num, ToPrimitive};
+use std::iter::{Product, Sum};
 
 use crate::stats::{EDAError, EDAResult};
 

@@ -6,7 +6,7 @@ fn main() {
     let y_train = vec![2., 4., 6., 8.];
 
     let mut model = LinearRegression::new(100, 0.1);
-    let _ = model.fit(&x_train, &y_train);
+    let _ = model.train(&x_train, &y_train);
 
     let test = vec![3.];
     println!("{:?}", model.predict(&test));

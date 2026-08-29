@@ -30,7 +30,7 @@ fn main() {
     let y_train = vec![2., 4., 6., 8.];
 
     let mut model = LinearRegression::new(100, 0.1);
-    let _ = model.fit(&x_train, &y_train).unwrap();
+    let _ = model.train(&x_train, &y_train).unwrap();
 
     let test = vec![3.];
     println!("{:?}", model.predict(&test));
@@ -68,8 +68,8 @@ The features that I want to try to add are roughly:
   - [x] Reading CSV data into a `Dataset`
   - [ ] Grouping data by column
   - [ ] Handling missing data
-  - [ ] Feature scaling
-  - [ ] Normalization
+  - [x] Feature scaling
+  - [x] Feature transformation
   - [ ] Outlier handling
   - [ ] One-hot encoding
   - [ ] Generalized function transformations
@@ -84,7 +84,7 @@ The features that I want to try to add are roughly:
 - Combinatorics
   - [ ] Permutations, combinations, etc. (optimized with gcd)
   - [ ] Larger number types
-- Numerical methods
+- Numerical methods/algebra
   - [ ] Tensors
   - [ ] Random number generator for arrays and scalars
   - [ ] Linear algebra methods

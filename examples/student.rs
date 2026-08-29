@@ -35,7 +35,7 @@ fn main() {
 
     // train linear model
     let mut model = LinearRegression::new(500, 1e-4);
-    model.fit(&x, &y).unwrap();
+    model.train(&x, &y).unwrap();
 
     // predict one entry (the first in the csv)
     let pred = model.predict(&vec![7., 99., 9., 1.]).unwrap();

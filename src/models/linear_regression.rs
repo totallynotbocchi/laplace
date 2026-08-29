@@ -29,7 +29,7 @@ impl LinearRegression {
 }
 
 impl Model for LinearRegression {
-    fn fit(&mut self, train_data: &Vec<Vec<f64>>, answers: &Vec<f64>) -> ModelResult<()> {
+    fn train(&mut self, train_data: &Vec<Vec<f64>>, answers: &Vec<f64>) -> ModelResult<()> {
         if train_data.len() != answers.len() {
             return Err(ModelError::TrainAndAnswersSizesDiffer);
         } else if train_data.len() == 0 {
@@ -94,7 +94,7 @@ mod tests {
         let y = vec![2., 4., 6., 8.]; // 4 answers
 
         let mut model = LinearRegression::new(500, 0.01);
-        let _ = model.fit(&x, &y);
+        let _ = model.train(&x, &y);
 
         let test = vec![3.];
         println!("{:?}", model.predict(&test));

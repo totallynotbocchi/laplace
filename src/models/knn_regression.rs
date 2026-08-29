@@ -42,7 +42,7 @@ impl KNNRegression {
 
 impl Model for KNNRegression {
     // NOTE: this copies data
-    fn fit(&mut self, train_data: &Vec<Vec<f64>>, answer_data: &Vec<f64>) -> ModelResult<()> {
+    fn train(&mut self, train_data: &Vec<Vec<f64>>, answer_data: &Vec<f64>) -> ModelResult<()> {
         if train_data.len() != answer_data.len() {
             return Err(ModelError::TrainAndAnswersSizesDiffer);
         } else if train_data.len() == 0 {
@@ -94,7 +94,7 @@ mod tests {
         let y = vec![1., 3., 2., 5.];
 
         let mut knn = KNNRegression::new(2, DistanceMethod::Euclidean);
-        knn.fit(&x, &y).unwrap();
+        knn.train(&x, &y).unwrap();
 
         let pred = knn.predict(&vec![4.5]).unwrap();
         assert_eq!(pred, 2.5);

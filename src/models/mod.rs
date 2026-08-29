@@ -21,6 +21,6 @@ pub enum ModelError {
 type ModelResult<T> = Result<T, ModelError>;
 
 pub trait Model {
-    fn fit(&mut self, train_data: &Vec<Vec<f64>>, answer_data: &Vec<f64>) -> ModelResult<()>;
+    fn train(&mut self, train_data: &Vec<Vec<f64>>, answer_data: &Vec<f64>) -> ModelResult<()>;
     fn predict(&self, data: &Vec<f64>) -> ModelResult<f64>;
 }
