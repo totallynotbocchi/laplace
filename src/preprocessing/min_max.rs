@@ -1,5 +1,5 @@
 use crate::{
-    preprocessing::{PreprocessingError, PreprocessingResult, Preprocessor},
+    preprocessing::{ColumnPreprocessor, PreprocessingError, PreprocessingResult},
     stats::Column,
 };
 
@@ -17,7 +17,7 @@ impl MinMaxScaler {
     }
 }
 
-impl Preprocessor for MinMaxScaler {
+impl ColumnPreprocessor for MinMaxScaler {
     fn fit(&mut self, data: &Column) -> PreprocessingResult<()> {
         if data.len() == 0 {
             return Err(PreprocessingError::EmptyData);

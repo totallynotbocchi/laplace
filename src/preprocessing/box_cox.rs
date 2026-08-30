@@ -1,5 +1,5 @@
 use crate::{
-    preprocessing::{PreprocessingError, PreprocessingResult, Preprocessor},
+    preprocessing::{ColumnPreprocessor, PreprocessingError, PreprocessingResult},
     stats::Column,
 };
 
@@ -12,12 +12,22 @@ impl BoxCoxTransformation {
         Self { lambda }
     }
 
-    pub fn default() -> Self {
+    fn transform_value(&self, y: f64) -> f64 {
+        if self.lambda == 0. {
+            y.ln()
+        } else {
+            (y.powf(self.lambda) - 1.) / self.lambda
+        }
+    }
+}
+
+impl Default for BoxCoxTransformation {
+    fn default() -> Self {
         Self { lambda: 1. }
     }
 }
 
-impl Preprocessor for BoxCoxTransformation {
+impl ColumnPreprocessor for BoxCoxTransformation {
     // this method only checks if the data has strictly positive numbers
     fn fit(&mut self, data: &Column) -> PreprocessingResult<()> {
         let is_all_positive = data
@@ -38,13 +48,7 @@ impl Preprocessor for BoxCoxTransformation {
             .as_f64_vec()
             .map_err(|_| PreprocessingError::InvalidColumnType)?
             .iter()
-            .map(|x| {
-                if self.lambda == 0. {
-                    x.ln()
-                } else {
-                    (x.powf(self.lambda) - 1.) / self.lambda
-                }
-            })
+            .map(|&y| self.transform_value(y))
             .collect::<Vec<f64>>();
 
         Ok(Column::Float(v))

@@ -32,7 +32,7 @@ pub enum DatasetError {
 
 pub type DatasetResult<T> = Result<T, DatasetError>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Dataset {
     columns: Vec<(String, Column)>,
 }
@@ -177,6 +177,24 @@ impl Dataset {
         }
 
         Ok(transpose)
+    }
+
+    pub fn get_columns_as_vec_f64(&self) -> DatasetResult<Vec<Vec<f64>>> {
+        if self.columns.is_empty() {
+            return Err(DatasetError::NoColumns);
+        }
+
+        let mut vec: Vec<Vec<f64>> = Vec::with_capacity(self.len());
+
+        for (_, col) in &self.columns {
+            match col {
+                Column::Int(v) => vec.push(v.iter().map(|&el| el as f64).collect()),
+                Column::Float(v) => vec.push(v.clone()),
+                Column::String(_) => return Err(DatasetError::InconsistentColumns),
+            }
+        }
+
+        Ok(vec)
     }
 
     // get immutable reference to a column

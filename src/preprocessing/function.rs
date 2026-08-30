@@ -1,5 +1,5 @@
 use crate::{
-    preprocessing::{PreprocessingError, PreprocessingResult, Preprocessor},
+    preprocessing::{ColumnPreprocessor, PreprocessingError, PreprocessingResult},
     stats::Column,
 };
 
@@ -25,7 +25,7 @@ impl FunctionTransformation {
     }
 }
 
-impl Preprocessor for FunctionTransformation {
+impl ColumnPreprocessor for FunctionTransformation {
     // does nothing
     fn fit(&mut self, _data: &Column) -> PreprocessingResult<()> {
         Ok(())

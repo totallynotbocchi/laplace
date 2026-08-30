@@ -1,5 +1,5 @@
 use crate::{
-    preprocessing::{PreprocessingError, PreprocessingResult, Preprocessor},
+    preprocessing::{ColumnPreprocessor, PreprocessingError, PreprocessingResult},
     stats::Column,
 };
 
@@ -18,7 +18,7 @@ impl ZScoreScaler {
     }
 }
 
-impl Preprocessor for ZScoreScaler {
+impl ColumnPreprocessor for ZScoreScaler {
     fn fit(&mut self, data: &Column) -> PreprocessingResult<()> {
         self.mean = Some(
             data.mean()

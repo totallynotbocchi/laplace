@@ -72,12 +72,12 @@ The features that I want to try to add are roughly:
   - [x] Feature transformation
   - [ ] Outlier handling
   - [ ] One-hot encoding
-  - [x] Generalized function transformations
+  - [x] Function transformations
 - Models
   - [x] Linear regression
   - [x] KNN
   - [ ] Naive bayes
-  - [ ] Polynomial regression
+  - [x] Polynomial regression
   - [ ] Ridge & lasso regression
   - [ ] More error/metric functions (like RMSE, R^2 and accuracy)
   - [ ] Classification variants (for KNN, linear reg., etc.)

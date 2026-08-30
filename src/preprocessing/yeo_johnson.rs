@@ -1,5 +1,5 @@
 use crate::{
-    preprocessing::{PreprocessingError, PreprocessingResult, Preprocessor},
+    preprocessing::{ColumnPreprocessor, PreprocessingError, PreprocessingResult},
     stats::Column,
 };
 
@@ -12,15 +12,33 @@ impl YeoJohnsonTransformation {
         Self { lambda }
     }
 
-    pub fn default() -> Self {
+    fn transform_value(&self, y: f64) -> f64 {
+        if y >= 0. && self.lambda == 0. {
+            (y + 1.).ln()
+        } else if y >= 0. {
+            ((y + 1.).powf(self.lambda) - 1.) / self.lambda
+        } else if self.lambda == 2. {
+            -(-y + 1.).ln()
+        } else {
+            -((-y + 1.).powf(2. - self.lambda) - 1.) / (2. - self.lambda)
+        }
+    }
+}
+
+impl Default for YeoJohnsonTransformation {
+    fn default() -> Self {
         Self { lambda: 1. }
     }
 }
 
-impl Preprocessor for YeoJohnsonTransformation {
-    // because yeo-johnson works for every value y, this method only checks if the column type is
-    // valid, we do this here as well so type errors are caught earlier
+impl ColumnPreprocessor for YeoJohnsonTransformation {
     fn fit(&mut self, data: &Column) -> PreprocessingResult<()> {
+        if data.len() == 0 {
+            return Err(PreprocessingError::EmptyData);
+        }
+
+        // because yeo-johnson works for every value y, this method only checks if the column type is
+        // valid, we do this here as well so type errors are caught earlier
         data.as_f64_vec()
             .map_err(|_| PreprocessingError::InvalidColumnType)?;
 
@@ -28,21 +46,15 @@ impl Preprocessor for YeoJohnsonTransformation {
     }
 
     fn transform(&self, data: &Column) -> PreprocessingResult<Column> {
+        if data.len() == 0 {
+            return Err(PreprocessingError::EmptyData);
+        }
+
         let v = data
             .as_f64_vec()
             .map_err(|_| PreprocessingError::InvalidColumnType)?
             .iter()
-            .map(|&y| {
-                if y >= 0. && self.lambda == 0. {
-                    (y + 1.).ln()
-                } else if y >= 0. {
-                    ((y + 1.).powf(self.lambda) - 1.) / self.lambda
-                } else if y < 0. && self.lambda == 2. {
-                    -(-y + 1.).ln()
-                } else {
-                    -((-y + 1.).powf(2. - self.lambda) - 1.) / (2. - self.lambda)
-                }
-            })
+            .map(|&y| self.transform_value(y))
             .collect::<Vec<f64>>();
 
         Ok(Column::Float(v))

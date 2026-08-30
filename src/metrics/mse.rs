@@ -13,7 +13,6 @@ pub fn mse(y_pred: &[f64], y_true: &[f64]) -> f64 {
     sum / y_pred.len() as f64
 }
 
-// dJ/dy
 pub fn mse_grad(y_pred: &[f64], y_true: &[f64]) -> Vec<f64> {
     if y_pred.len() != y_true.len() {
         panic!("Sizes don't match.")

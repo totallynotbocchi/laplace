@@ -41,7 +41,7 @@ pub enum ColumnError {
 pub type ColumnResult<T> = Result<T, ColumnError>;
 
 // a single cell in a column/dataset, used when returning specific column value
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Value {
     Int(i64),
     Float(f64),
