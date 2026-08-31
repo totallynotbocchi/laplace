@@ -93,9 +93,10 @@ The features that I want to try to add are roughly:
   - [ ] Tensors
   - [ ] Linear algebra methods
   - [ ] A method like NumPy's `linspace`
-  - [ ] Numerical approximations (for things like derivatives and integrals)
+  - [x] Numerical approximations (for things like derivatives and integrals)
 - Misc
   - [ ] Lua API
   - [ ] Get rid of the unfathomable amount of `.unwrap()`
   - [ ] Make better errors
   - [ ] My own CSV reading
+  - [ ] Better tests
