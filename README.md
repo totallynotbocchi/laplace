@@ -94,9 +94,11 @@ The features that I want to try to add are roughly:
   - [ ] Linear algebra methods
   - [ ] A method like NumPy's `linspace`
   - [x] Numerical approximations (for things like derivatives and integrals)
-- Misc
+- Misc/fixes
   - [ ] Lua API
   - [ ] Get rid of the unfathomable amount of `.unwrap()`
   - [ ] Make better errors
   - [ ] My own CSV reading
   - [ ] Better tests
+  - [ ] Macros for creating `Column`, `Vector`, `Dataset` and etc.
+  - [ ] Implement traits for `Dataset` and `Column` rather than weird methods
