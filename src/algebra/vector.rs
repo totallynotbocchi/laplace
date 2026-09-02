@@ -39,14 +39,15 @@ where
     }
 }
 
-// operations
-impl<T, const N: usize> Vector<T, N>
+// dot product
+impl<T, const N: usize> Mul<Vector<T, N>> for Vector<T, N>
 where
     T: Num + Copy + Sum + Mul<T>,
 {
-    // NOTE: returns new vector
-    pub fn dot(&self, other: &Self) -> T {
-        self.data.iter().zip(other.data).map(|(&a, b)| a * b).sum()
+    type Output = T;
+
+    fn mul(self, rhs: Vector<T, N>) -> Self::Output {
+        self.data.iter().zip(rhs.data).map(|(&a, b)| a * b).sum()
     }
 }
 
@@ -187,6 +188,6 @@ mod tests {
         let v1 = Vector::from([1, 2, 3]);
         let v2 = Vector::from([1, 2, 3]);
 
-        assert_eq!(v1.dot(&v2), 14);
+        assert_eq!(v1 * v2, 14);
     }
 }
