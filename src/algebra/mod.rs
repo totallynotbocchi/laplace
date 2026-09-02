@@ -1,4 +1,6 @@
-pub mod tensor;
-pub mod vector;
+mod matrix;
+mod tensor;
+mod vector;
 
+pub use matrix::*;
 pub use vector::*;

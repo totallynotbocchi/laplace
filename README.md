@@ -91,7 +91,7 @@ The features that I want to try to add are roughly:
   - [ ] Larger number types
 - Numerical methods/algebra
   - [ ] Tensors
-  - [ ] Linear algebra methods
+  - [x] Linear algebra methods
   - [ ] A method like NumPy's `linspace`
   - [x] Numerical approximations (for things like derivatives and integrals)
 - Misc/fixes

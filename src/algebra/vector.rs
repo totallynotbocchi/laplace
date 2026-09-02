@@ -1,5 +1,5 @@
 use std::{
-    iter::{Sum, zip},
+    iter::Sum,
     ops::{Add, Mul, Neg, Sub},
 };
 
@@ -7,17 +7,23 @@ use num_traits::{Num, ToPrimitive};
 
 // struct for n-dimensional vectors
 #[derive(Debug)]
-struct Vector<T, const N: usize> {
+pub struct Vector<T, const N: usize> {
     data: [T; N],
 }
 
 // turn array into Vector
-impl<T, const N: usize> From<[T; N]> for Vector<T, N>
-where
-    T: Num + Copy,
-{
+impl<T, const N: usize> From<[T; N]> for Vector<T, N> {
     fn from(value: [T; N]) -> Self {
         Self { data: value }
+    }
+}
+
+impl<T, const N: usize> Into<[T; N]> for Vector<T, N>
+where
+    T: Clone,
+{
+    fn into(self) -> [T; N] {
+        self.data.clone()
     }
 }
 
@@ -119,6 +125,42 @@ where
                 .try_into()
                 .unwrap(),
         }
+    }
+}
+
+// general methods
+impl<T, const N: usize> Vector<T, N> {
+    // immutable reference
+    pub fn at(&self, i: usize) -> Option<&T> {
+        if i >= N {
+            return None;
+        }
+
+        Some(&self.data[i])
+    }
+
+    // mutable reference
+    pub fn at_mut(&mut self, i: usize) -> Option<&mut T> {
+        if i >= N {
+            return None;
+        }
+
+        Some(&mut self.data[i])
+    }
+}
+
+// methods for T that implement Clone
+impl<T, const N: usize> Vector<T, N>
+where
+    T: Clone,
+{
+    // copy getter
+    pub fn at_clone(&self, i: usize) -> Option<T> {
+        if i >= N {
+            return None;
+        }
+
+        Some(self.data[i].clone())
     }
 }
 
