@@ -326,6 +326,22 @@ where
     }
 }
 
+// matrix trace
+impl<T, const N: usize> Matrix<T, N, N>
+where
+    T: Num + Copy,
+{
+    pub fn trace(&self) -> T {
+        let mut sum = T::zero();
+
+        for i in 0..N {
+            sum = sum + self.at_clone(i, i).unwrap();
+        }
+
+        sum
+    }
+}
+
 // matrix transpose
 impl<T, const ROWS: usize, const COLS: usize> Matrix<T, ROWS, COLS>
 where
@@ -369,5 +385,11 @@ mod tests {
         let b = Matrix::from([[5, 6], [7, 8]]);
 
         assert_eq!(a * b, Matrix::from([[19, 22], [43, 50]]))
+    }
+
+    #[test]
+    fn identity_trace() {
+        let id = Matrix::from([[1, 0], [0, 1]]);
+        assert_eq!(id.trace(), 2);
     }
 }

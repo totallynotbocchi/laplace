@@ -76,12 +76,12 @@ The features that I want to try to add are roughly:
 - Models
   - [x] Linear regression
   - [x] KNN
-  - [ ] Naive bayes
   - [x] Polynomial regression
+  - [x] Weighted linear regression
   - [ ] Ridge & lasso regression
+  - [ ] Naive bayes
   - [ ] More error/metric functions (like RMSE, R^2 and accuracy)
   - [ ] Classification variants (for KNN, linear reg., etc.)
-  - [ ] Make linear regression have weights per column (example weighting)
 - Probability
   - [ ] Basic probability distributions (with samples of dists. and etc.)
   - [ ] Probability distribution methods (like CDF, PDF, etc.)
@@ -90,10 +90,10 @@ The features that I want to try to add are roughly:
   - [ ] Permutations, combinations, etc. (optimized with gcd)
   - [ ] Larger number types
 - Numerical methods/algebra
-  - [ ] Tensors
+  - [x] Numerical approximations (for things like derivatives and integrals)
   - [x] Linear algebra methods
   - [ ] A method like NumPy's `linspace`
-  - [x] Numerical approximations (for things like derivatives and integrals)
+  - [ ] Tensors
 - Misc/fixes
   - [ ] Lua API
   - [ ] Get rid of the unfathomable amount of `.unwrap()`
@@ -101,4 +101,3 @@ The features that I want to try to add are roughly:
   - [ ] My own CSV reading
   - [ ] Better tests
   - [ ] Macros for creating `Column`, `Vector`, `Dataset` and etc.
-  - [ ] Implement traits for `Dataset` and `Column` rather than weird methods

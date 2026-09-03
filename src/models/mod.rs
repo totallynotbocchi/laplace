@@ -16,6 +16,12 @@ pub enum ModelError {
 
     #[error("There is no data.")]
     EmptyData,
+
+    #[error("The weights (not parameters) are not enough to cover every column.")]
+    SizesNotMatchingWeights,
+
+    #[error("This model is untrained and cannot predict.")]
+    ModelUntrained,
 }
 
 type ModelResult<T> = Result<T, ModelError>;

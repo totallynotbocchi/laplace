@@ -1,3 +1,6 @@
+use std::any::Any;
+
+use crate::algebra::Vector;
 use crate::stats::EDAError;
 use crate::stats::*;
 use thiserror::Error;
@@ -34,8 +37,11 @@ pub enum ColumnError {
     #[error("The sizes of the two columns do not match.")]
     NonMatchingSizes,
 
-    #[error("The column is not numeric when it was expected to be,")]
+    #[error("The column is not numeric when it was expected to be.")]
     NonNumerical,
+
+    #[error("The column numeric when it was not expected to be.")]
+    Numerical,
 }
 
 pub type ColumnResult<T> = Result<T, ColumnError>;
@@ -56,8 +62,6 @@ pub enum Column {
     String(Vec<String>),
 }
 
-// TODO: make a macro for creating Columns inline
-
 impl Column {
     pub fn len(&self) -> usize {
         match self {
@@ -77,24 +81,23 @@ impl Column {
         self
     }
 
-    pub fn get(&self, idx: usize) -> ColumnResult<Value> {
+    pub fn get(&self, idx: usize) -> Option<Value> {
         match self {
             Column::Int(v) => {
-                let value = *v.get(idx).ok_or(ColumnError::NonNumerical)?;
-                Ok(Value::Int(value))
+                let value = *v.get(idx)?;
+                Some(Value::Int(value))
             }
             Column::Float(v) => {
-                let value = *v.get(idx).ok_or(ColumnError::NonNumerical)?;
-                Ok(Value::Float(value))
+                let value = *v.get(idx)?;
+                Some(Value::Float(value))
             }
             Column::String(v) => {
-                let value = v.get(idx).ok_or(ColumnError::NonNumerical)?;
-                Ok(Value::String(value.clone()))
+                let value = v.get(idx)?;
+                Some(Value::String(value.clone()))
             }
         }
     }
 
-    // NOTE: this copies data
     pub fn as_f64_vec(&self) -> ColumnResult<Vec<f64>> {
         match self {
             Self::Int(v) => Ok(v.iter().map(|&x| x as f64).collect()),
@@ -198,6 +201,60 @@ impl Column {
 
     pub fn samp_cov(&self, other: &Column) -> EDAResult<f64> {
         eda_other_abst!(self, other, samp_cov)?
+    }
+}
+
+impl From<Vec<f64>> for Column {
+    fn from(value: Vec<f64>) -> Self {
+        Self::Float(value.clone())
+    }
+}
+
+impl From<Vec<i64>> for Column {
+    fn from(value: Vec<i64>) -> Self {
+        Self::Int(value.clone())
+    }
+}
+
+impl From<Vec<String>> for Column {
+    fn from(value: Vec<String>) -> Self {
+        Self::String(value.clone())
+    }
+}
+
+impl<const N: usize> From<Vector<i64, N>> for Column {
+    fn from(value: Vector<i64, N>) -> Self {
+        let mut v: Vec<i64> = Vec::with_capacity(N);
+
+        for i in 0..N {
+            v[i] = value.at_clone(i).unwrap();
+        }
+
+        Column::Int(v)
+    }
+}
+
+impl<const N: usize> From<Vector<f64, N>> for Column {
+    fn from(value: Vector<f64, N>) -> Self {
+        let mut v: Vec<f64> = Vec::with_capacity(N);
+
+        for i in 0..N {
+            v[i] = value.at_clone(i).unwrap();
+        }
+
+        Column::Float(v)
+    }
+}
+
+impl<const N: usize> From<Vector<String, N>> for Column {
+    fn from(value: Vector<String, N>) -> Self {
+        let mut v: Vec<String> = Vec::with_capacity(N);
+
+        for i in 0..N {
+            v[i] = value.at_clone(i).unwrap();
+        }
+
+        Column::String(v)
     }
 }
 
